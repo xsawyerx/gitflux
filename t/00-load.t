@@ -1,9 +1,19 @@
-#!perl -T
+use strict;
+use warnings;
+use Test::More;
+use File::Find;
+use Git::Repository;
 
-use Test::More tests => 1;
+my @modules;
+find( sub { push @modules, $File::Find::name if /\.pm$/ }, 'blib/lib' );
 
-BEGIN {
-    use_ok( 'Git::Flux' ) || print "Bail out!\n";
-}
+plan tests => scalar @modules;
+
+use_ok($_)
+    for reverse sort map { s!/!::!g; s/\.pm$//; s/^blib::lib:://; $_ }
+    @modules;
 
 diag( "Testing Git::Flux $Git::Flux::VERSION, Perl $], $^X" );
+diag( "Testing with Git::Repository $Git::Repository::VERSION" );
+diag( "Testing with Git " . Git::Repository->version );
+
