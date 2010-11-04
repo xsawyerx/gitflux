@@ -10,13 +10,18 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Git/Flux.pm',
     build_requires => {
         'Test::More' => 0,
+        'File::Temp' => 0,
     },
 
     requires => {
-        'perl' => 5.006,
+        'perl'            => 5.006,
+        'Git::Repository' => 0,
     },
-    add_to_cleanup      => [ 'Git-Flux-*' ],
+
+    add_to_cleanup     => [ 'Git-Flux-*' ],
     create_makefile_pl => 'traditional',
+    create_readme      => 1,
+    create_license     => 1,
 );
 
 $builder->create_build_script();
