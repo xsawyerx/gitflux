@@ -14,4 +14,21 @@ sub create_empty_repo {
     return $repo;
 }
 
+sub configure_default_repo {
+    my $repo = shift;
+
+    # got master, develop configured
+    $repo->cmd( config => 'gitflux.branch.master',  'master'  );
+    $repo->cmd( config => 'gitflux.branch.develop', 'develop' );
+
+    # has prefixes configured for every branch
+    # (feature, release, hotfix, support)
+    foreach my $prefix ( qw/ feature release hotfix support / ) {
+        $repo->cmd( config => "gitflux.prefix.$prefix", "$prefix/" );
+    }
+
+    # versiontag configured
+    $repo->cmd( config => 'gitflux.prefix.versiontag', 'v' );
+}
+
 1;

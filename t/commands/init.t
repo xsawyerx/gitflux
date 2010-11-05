@@ -68,22 +68,12 @@ use TestFunctions;
     my $repo = create_empty_repo();
     my $flux = Git::Flux->new( dir => $repo->work_dir );
 
-    # got master, develop configured
-    $repo->cmd( config => 'gitflux.branch.master',  'master'  );
-    $repo->cmd( config => 'gitflux.branch.develop', 'develop' );
-
-    # has prefixes configured for every branch
-    # (feature, release, hotfix, support)
-    foreach my $prefix ( qw/ feature release hotfix support / ) {
-        $repo->cmd( config => "gitflux.prefix.$prefix", "$prefix/" );
-    }
-
-    # versiontag configured
-    $repo->cmd( config => 'gitflux.prefix.versiontag', 'v' );
+    configure_default_repo($repo);
 
     is(
         exception { $flux->init },
-        'Already initialized for gitflux',
+        "Already initialized for gitflux\n" .
+            'To force reinitialization, use: git flow init -f',
         'reinit without force fails',
     );
 }
@@ -100,23 +90,21 @@ use TestFunctions;
     my $repo = create_empty_repo();
     my $flux = Git::Flux->new( dir => $repo->work_tree );
 
-    # got master, develop configured
-    $repo->cmd( config => 'gitflux.branch.master',  'master'  );
-    $repo->cmd( config => 'gitflux.branch.develop', 'develop' );
-
-    # has prefixes configured for every branch
-    # (feature, release, hotfix, support)
-    foreach my $prefix ( qw/ feature release hotfix support / ) {
-        $repo->cmd( config => "gitflux.prefix.$prefix", "$prefix/" );
-    }
-
-    # versiontag configured
-    $repo->cmd( config => 'gitflux.prefix.versiontag', 'v' );
+    configure_default_repo($repo);
 
     ok(
         ! exception { $flux->init( force => 1 ) },
         'reinit with force succeeds',
     );
+}
+
+{
+    # TODO: when gitflux master isn't "master", it creates the new master branch
+    1;
+}
+
+{
+
 }
 
 # - initialize on dirty working tree              = not ok
