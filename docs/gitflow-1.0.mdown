@@ -1,0 +1,39 @@
+gitflow branching model
+=======================
+
+This document documents the gitflow branching model, as described
+in Vincent Driessen's [original blog post](http://nvie.com/git-model).
+
+Master branch
+-------------
+* Initial commit: empty
+* Branch naming convention: master
+* Usage: We consider origin/master to be the main branch where the source code of HEAD always reflects a production-ready state.
+
+Development branch
+------------------
+* May branch off from: master
+* Branch naming convention: develop
+* Usage: We consider origin/develop to be the main branch where the source code of HEAD always reflects a state with the latest delivered development changes for the next release. Some would call this the “integration branch”. This is where any automatic nightly builds are built from.
+
+Feature branches
+----------------
+* May branch off from: develop
+* Must merge back into: develop
+* Branch naming convention: anything except master, develop, release-*, or hotfix-*
+* Usage: Feature branches (or sometimes called topic branches) are used to develop new features for the upcoming or a distant future release.
+
+Release branches
+----------------
+* May branch off from: develop
+* Must merge back into: develop and master
+* Branch naming convention: release-*
+* Usage: Release branches support preparation of a new production release.
+
+Hotfix branches
+---------------
+* May branch off from: master
+* Must merge back into: develop and master
+* Branch naming convention: hotfix-*
+* Usage: Hotfix branches are very much like release branches in that they are also meant to prepare for a new production release, albeit unplanned.
+
