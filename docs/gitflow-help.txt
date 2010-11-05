@@ -1,0 +1,41 @@
+$ git flow help
+usage: git flow <subcommand>
+
+Available subcommands are:
+   init      Initialize a new git repo with support for the branching model.
+   feature   Manage your feature branches.
+   release   Manage your release branches.
+   hotfix    Manage your hotfix branches.
+   support   Manage your support branches.
+   version   Shows version information.
+
+Try 'git flow <subcommand> help' for details.
+$ git flow init help
+usage: git flow init [-f]
+$ git flow feature help
+usage: git flow feature [list] [-v]
+       git flow feature start [-F] <name> [<base>]
+       git flow feature finish [-rFk] <name|nameprefix>
+       git flow feature publish <name>
+       git flow feature track <name>
+       git flow feature diff [<name|nameprefix>]
+       git flow feature rebase [-i] [<name|nameprefix>]
+       git flow feature checkout [<name|nameprefix>]
+       git flow feature pull <remote> [<name>]
+$ git flow release help
+usage: git flow release [list] [-v]
+       git flow release start [-F] <version>
+       git flow release finish [-Fsumpk] <version>
+       git flow release publish <name>
+       git flow release track <name>
+$ git flow hotfix help
+usage: git flow hotfix [list] [-v]
+       git flow hotfix start [-F] <version> [<base>]
+       git flow hotfix finish [-Fsumpk] <version>
+$ git flow support help
+note: The support subcommand is still very EXPERIMENTAL!
+note: DO NOT use it in a production situation.
+usage: git flow support [list] [-v]
+       git flow support start [-F] <version> <base>
+$ git flow version help
+usage: git flow version
