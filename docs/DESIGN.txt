@@ -1,0 +1,23 @@
+gitflux
+=======
+
+The goal is to be able to describe "any" workflow, based on different
+branch types. The description would fit in a configuration file that
+can be stored in the repository using the policy.
+
+Each gitflow command (except init and version) is named after a type
+of branch.
+
+The common subcommands are:
+- list:      list all branches of the given type
+- start:     create a new branch of the given type
+- finish:    merge back and delete a branch of the given type
+
+Other subcommands include:
+- publish:   create remote branch
+- track:     track a remote branch
+- diff:      show a diff with the root branch
+- rebase:    rebase on the root branch
+- checkout:  checkout the branch
+- pull:      pull from the remote
+
