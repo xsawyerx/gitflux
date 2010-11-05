@@ -96,6 +96,7 @@ use TestFunctions;
         ! exception { $flux->init( force => 1 ) },
         'reinit with force succeeds',
     );
+
 }
 
 {
@@ -104,10 +105,38 @@ use TestFunctions;
 }
 
 {
+    # fresh git repo, branches will get created
 
+    my $repo = create_empty_repo();
+    my $flux = Git::Flux->new(
+        dir   => $repo->work_tree,
+        quiet => 1, # don't ask, just do it
+    );
+
+    # check that everything was created successfully
+    is(
+        $repo->cmd( config => '--get', 'gitflux.branch.master' ),
+        'master',
+        'master created',
+    );
+
+    foreach my $prefix ( qw/ feature release hotfix support / ) {
+        is(
+            $repo->cmd( config => '--get', "gitflux.prefix.$prefix" ),
+            "$prefix/",
+            "$prefix created",
+        );
+    }
+
+    # FIXME: we need to find out the exit code of this instead of the value
+    # because the value is by default blank, we don't know if it's configured
+    # as empty or not configured at all - exit code gives us that
+    is(
+        $repo->cmd( config => '--get', 'gitflux.prefix.versiontag' ),
+        '',
+        'versiontag created',
+    );
 }
 
-# - initialize on dirty working tree              = not ok
-# - creating all the correct branches             = ok
 # - renaming the branches before creation         = ok
 
