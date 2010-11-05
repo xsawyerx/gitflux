@@ -39,7 +39,7 @@ use TestFunctions;
     # requiring clean working directory
 
     my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( repo => $repo );
+    my $flux = Git::Flux->new( dir => $repo->work_dir );
 
     is(
         exception { $flux->init },
@@ -66,7 +66,7 @@ use TestFunctions;
     # shouldn't work
 
     my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( repo => $repo );
+    my $flux = Git::Flux->new( dir => $repo->work_dir );
 
     # got master, develop configured
     $repo->cmd( config => 'gitflux.branch.master',  'master'  );
@@ -98,7 +98,7 @@ use TestFunctions;
     # should work
 
     my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( repo => $repo );
+    my $flux = Git::Flux->new( dir => $repo->work_tree );
 
     # got master, develop configured
     $repo->cmd( config => 'gitflux.branch.master',  'master'  );
