@@ -7,7 +7,7 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
-use Test::More tests => 5;
+use Test::More tests => 11;
 use Test::Fatal;
 use TestFunctions;
 
