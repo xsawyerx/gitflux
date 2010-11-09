@@ -36,7 +36,7 @@ use TestFunctions;
 
     my $flux = Git::Flux->new( dir => $repo->work_tree );
 
-    my $output <<'_END';
+    my $output = <<'_END';
 note: The support subcommand is still very EXPERIMENTAL!
 note: DO NOT use it in a production situation.
 No support branches exist.
