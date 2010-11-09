@@ -17,7 +17,7 @@ use TestFunctions;
     my $dir  = tempdir( CLEANUP => 1 );
     my $flux = Git::Flux->new( dir => $dir );
 
-    $flux->init;
+    $flux->cmd('init');
 
     opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
     my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
@@ -42,7 +42,7 @@ use TestFunctions;
     my $flux = Git::Flux->new( dir => $repo->work_dir );
 
     is(
-        exception { $flux->init },
+        exception { $flux->cmd('init') },
         'fatal: Working tree contains unstaged changes. Aborting.',
         'require clean working directory (unstaged)',
     );
@@ -55,7 +55,7 @@ use TestFunctions;
     $repo->cmd( add => $file );
 
     is(
-        exception { $flux->init },
+        exception { $flux->cmd('init') },
         'fatal: Index contains uncommited changes. Aborting.',
         'require clean working directory (uncommited)',
     );
@@ -71,7 +71,7 @@ use TestFunctions;
     configure_default_repo($repo);
 
     is(
-        exception { $flux->init },
+        exception { $flux->cmd('init') },
         "Already initialized for gitflux\n" .
             'To force reinitialization, use: git flow init -f',
         'reinit without force fails',
@@ -93,7 +93,7 @@ use TestFunctions;
     configure_default_repo($repo);
 
     ok(
-        ! exception { $flux->init( force => 1 ) },
+        ! exception { $flux->cmd( 'init' => '-f' ) },
         'reinit with force succeeds',
     );
 
