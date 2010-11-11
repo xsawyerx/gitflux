@@ -39,7 +39,7 @@ use TestFunctions;
     # requiring clean working directory
 
     my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_dir );
+    my $flux = Git::Flux->new( dir => $repo->work_tree );
 
     is(
         exception { $flux->cmd('init') },
@@ -66,7 +66,7 @@ use TestFunctions;
     # shouldn't work
 
     my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_dir );
+    my $flux = Git::Flux->new( dir => $repo->work_tree );
 
     configure_default_repo($repo);
 

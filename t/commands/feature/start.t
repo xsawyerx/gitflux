@@ -16,7 +16,7 @@ use Test::TinyMocker;
     # can't init without name
 
     my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_dir );
+    my $flux = Git::Flux->new( dir => $repo->work_tree );
 
     configure_default_repo();
 
@@ -31,7 +31,7 @@ use Test::TinyMocker;
     # if branch name exists, we die
 
     my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_dir );
+    my $flux   = Git::Flux->new( dir => $repo->work_tree );
     my $branch = 'test_feature';
 
     configure_default_repo();
@@ -55,7 +55,7 @@ use Test::TinyMocker;
     # assert origin's same-name branch isn't behind it
 
     my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_dir );
+    my $flux   = Git::Flux->new( dir => $repo->work_tree );
     my $branch = 'test_feature';
 
     configure_default_repo();
@@ -82,7 +82,7 @@ use Test::TinyMocker;
     # exception thrown when cannot create branch
 
     my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_dir );
+    my $flux   = Git::Flux->new( dir => $repo->work_tree );
     my $branch = 'test_feature';
 
     configure_default_repo();
@@ -109,7 +109,7 @@ use Test::TinyMocker;
     # everything working
 
     my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_dir );
+    my $flux   = Git::Flux->new( dir => $repo->work_tree );
     my $branch = 'test_feature';
 
     configure_default_repo();
