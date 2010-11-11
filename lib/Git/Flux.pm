@@ -5,11 +5,18 @@ use warnings;
 
 our $VERSION = '0.01';
 
-sub cmd {
+sub new {
+    my $class = shift;
+    my $self  = {};
+
+    bless $self, $class;
+}
+
+sub run {
     my $self = shift;
     my ( $cmd, @opts ) = @_;
-    my $class = "Git::Flux::$cmd";
-    eval "use $class";
+    my $class = "Git::Flux::Command::$cmd";
+
     $class->run(@opts);
 }
 
