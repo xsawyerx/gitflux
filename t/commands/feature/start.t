@@ -19,7 +19,7 @@ use Test::TinyMocker;
 
     is(
         exception { $flux->run( feature => 'start' ) },
-        'Missing argument <name>',
+        "Missing argument <name>\n",
         'Cannot init without name',
     );
 }
@@ -35,7 +35,7 @@ use Test::TinyMocker;
 
     is(
         exception { $flux->run( feature => 'start', $branch ) },
-        qq{Branch '$branch' already exists. Pick another name.},
+        qq{Branch '$branch' already exists. Pick another name.\n},
         'Cannot create feature branch with pre-existing name',
     );
 }
@@ -86,7 +86,7 @@ use Test::TinyMocker;
 
     is(
         exception { $flux->run( feature => 'start', $branch ) },
-        qq{Could not create feature branch '$branch'},
+        qq{Could not create feature branch '$branch'\n},
         'Recognizing git branch failure',
     );
 
