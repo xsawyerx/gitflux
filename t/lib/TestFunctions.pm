@@ -5,6 +5,14 @@ use File::Temp 'tempdir';
 use Cwd 'cwd';
 use Git::Repository;
 
+sub default_env {
+    my $repo = create_empty_repo();
+    my $flux = Git::Flux->new( dir => $repo->work_tree );
+    configure_default_repo($repo);
+
+    return $flux, $repo;
+}
+
 sub create_empty_repo {
     my $dir = tempdir( CLEANUP => 1 );
     my $orig = cwd();

@@ -15,10 +15,7 @@ use TestFunctions;
     # list if no support branches exist
     # should fail
 
-    my $repo = create_empty_repo();
-    configure_default_repo();
-
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
 
     is(
         exception { $flux->cmd('list') },
@@ -31,10 +28,8 @@ use TestFunctions;
 {
     # list when gitflux initialized
     # should work
-    my $repo = create_empty_repo();
-    configure_default_repo();
 
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
 
     my $output = <<'_END';
 note: The support subcommand is still very EXPERIMENTAL!
@@ -57,10 +52,7 @@ _END
     # list when support branches exist
     # should succeed
 
-    my $repo = create_empty_repo();
-    configure_default_repo();
-
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
 
     $flux->cmd( support => 'init', 'test_sup' );
 

@@ -15,10 +15,7 @@ use Test::TinyMocker;
 {
     # can't init without name
 
-    my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
-
-    configure_default_repo();
+    my ( $flux, $repo ) = default_env();
 
     is(
         exception { $flux->cmd( feature => 'start' ) },
@@ -30,11 +27,8 @@ use Test::TinyMocker;
 {
     # if branch name exists, we die
 
-    my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
-
-    configure_default_repo();
 
     # create feature branch
     $repo->cmd( branch => $branch );
@@ -54,11 +48,8 @@ use Test::TinyMocker;
 {
     # assert origin's same-name branch isn't behind it
 
-    my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
-
-    configure_default_repo();
 
     # create origin feature branch, at least fooling the app to think so
     $repo->cmd( branch => "origin/$branch" );
@@ -81,11 +72,8 @@ use Test::TinyMocker;
 {
     # exception thrown when cannot create branch
 
-    my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
-
-    configure_default_repo();
 
     # cripple branch creation so it doesn't work
     mock 'Git::Repository::Command'
@@ -108,11 +96,8 @@ use Test::TinyMocker;
 {
     # everything working
 
-    my $repo   = create_empty_repo();
-    my $flux   = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
-
-    configure_default_repo();
 
     ok(
         ! exception { $flux->cmd( feature => 'start', $branch ) },
@@ -124,3 +109,4 @@ use Test::TinyMocker;
         'branch was created successfully',
     );
 }
+

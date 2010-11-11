@@ -10,8 +10,7 @@ use File::Temp 'tempdir';
 use Test::More tests => 1;
 use TestFunctions;
 
-my $repo = create_empty_repo();
-my $flux = Git::Flux->new( dir => $repo->work_tree );
+my ( $flux, $repo ) = default_env();
 my @data = $flux->cmd( feature => 'help' );
 
 like(

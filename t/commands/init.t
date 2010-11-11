@@ -65,10 +65,7 @@ use TestFunctions;
     # init on existing repo without force
     # shouldn't work
 
-    my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
-
-    configure_default_repo($repo);
+    my ( $flux, $repo ) = default_env();
 
     is(
         exception { $flux->cmd('init') },
@@ -87,10 +84,7 @@ use TestFunctions;
     # init on existing repo with force
     # should work
 
-    my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
-
-    configure_default_repo($repo);
+    my ( $flux, $repo ) = default_env();
 
     ok(
         ! exception { $flux->cmd( 'init' => '-f' ) },
