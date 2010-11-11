@@ -3,11 +3,21 @@ package Git::Flux;
 use strict;
 use warnings;
 
+use Git::Repository;
+
+# commands
+use mixin 'Git::Flux::Command::feature';
+
 our $VERSION = '0.01';
 
 sub new {
     my $class = shift;
+    my %opts  = @_;
+    my $dir   = $opts{'dir'} || '.';
     my $self  = {};
+
+    $self->{'repo'} = $opts{'repo'}
+        || Git::Repository->create( work_tree => $dir );
 
     bless $self, $class;
 }
@@ -15,9 +25,8 @@ sub new {
 sub run {
     my $self = shift;
     my ( $cmd, @opts ) = @_;
-    my $class = "Git::Flux::Command::$cmd";
 
-    $class->run(@opts);
+    $self->$cmd(@opts);
 }
 
 1;
