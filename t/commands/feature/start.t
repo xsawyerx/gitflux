@@ -18,7 +18,7 @@ use Test::TinyMocker;
     my ( $flux, $repo ) = default_env();
 
     is(
-        exception { $flux->cmd( feature => 'start' ) },
+        exception { $flux->run( feature => 'start' ) },
         'Missing argument <name>',
         'Cannot init without name',
     );
@@ -31,10 +31,10 @@ use Test::TinyMocker;
     my $branch = 'test_feature';
 
     # create feature branch
-    $repo->cmd( branch => $branch );
+    $repo->run( branch => $branch );
 
     is(
-        exception { $flux->cmd( feature => 'start', $branch ) },
+        exception { $flux->run( feature => 'start', $branch ) },
         qq{Branch '$branch' already exists. Pick another name.},
         'Cannot create feature branch with pre-existing name',
     );
@@ -52,12 +52,12 @@ use Test::TinyMocker;
     my $branch = 'test_feature';
 
     # create origin feature branch, at least fooling the app to think so
-    $repo->cmd( branch => "origin/$branch" );
+    $repo->run( branch => "origin/$branch" );
 
     # this shouldn't be a problem since it isn't really origin,
     # just looks like
     ok(
-        ! exception { $flux->cmd( feature => 'start', $branch ) },
+        ! exception { $flux->run( feature => 'start', $branch ) },
         'No problem on differing branches',
     );
 }
@@ -80,12 +80,12 @@ use Test::TinyMocker;
         => method 'run'
         => should {
             my $self = shift;
-            my $cmd = shift;
+            my $run = shift;
             return;
         };
 
     is(
-        exception { $flux->cmd( feature => 'start', $branch ) },
+        exception { $flux->run( feature => 'start', $branch ) },
         qq{Could not create feature branch '$branch'},
         'Recognizing git branch failure',
     );
@@ -100,7 +100,7 @@ use Test::TinyMocker;
     my $branch = 'test_feature';
 
     ok(
-        ! exception { $flux->cmd( feature => 'start', $branch ) },
+        ! exception { $flux->run( feature => 'start', $branch ) },
         'feature start command lives',
     );
 

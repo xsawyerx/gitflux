@@ -17,7 +17,7 @@ use TestFunctions;
     my $dir  = tempdir( CLEANUP => 1 );
     my $flux = Git::Flux->new( dir => $dir );
 
-    $flux->cmd('init');
+    $flux->run('init');
 
     opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
     my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
@@ -42,7 +42,7 @@ use TestFunctions;
     my $flux = Git::Flux->new( dir => $repo->work_tree );
 
     is(
-        exception { $flux->cmd('init') },
+        exception { $flux->run('init') },
         'fatal: Working tree contains unstaged changes. Aborting.',
         'require clean working directory (unstaged)',
     );
@@ -52,10 +52,10 @@ use TestFunctions;
     print {$fh} "blah blah blah\n" or die "Can't print to file '$file': $!\n";
     close $fh                      or die "Can't close file '$file': $!\n";
 
-    $repo->cmd( add => $file );
+    $repo->run( add => $file );
 
     is(
-        exception { $flux->cmd('init') },
+        exception { $flux->run('init') },
         'fatal: Index contains uncommited changes. Aborting.',
         'require clean working directory (uncommited)',
     );
@@ -68,7 +68,7 @@ use TestFunctions;
     my ( $flux, $repo ) = default_env();
 
     is(
-        exception { $flux->cmd('init') },
+        exception { $flux->run('init') },
         "Already initialized for gitflux\n" .
             'To force reinitialization, use: git flow init -f',
         'reinit without force fails',
@@ -87,7 +87,7 @@ use TestFunctions;
     my ( $flux, $repo ) = default_env();
 
     ok(
-        ! exception { $flux->cmd( 'init' => '-f' ) },
+        ! exception { $flux->run( 'init' => '-f' ) },
         'reinit with force succeeds',
     );
 
@@ -109,14 +109,14 @@ use TestFunctions;
 
     # check that everything was created successfully
     is(
-        $repo->cmd( config => '--get', 'gitflux.branch.master' ),
+        $repo->run( config => '--get', 'gitflux.branch.master' ),
         'master',
         'master created',
     );
 
     foreach my $prefix ( qw/ feature release hotfix support / ) {
         is(
-            $repo->cmd( config => '--get', "gitflux.prefix.$prefix" ),
+            $repo->run( config => '--get', "gitflux.prefix.$prefix" ),
             "$prefix/",
             "$prefix created",
         );
@@ -126,7 +126,7 @@ use TestFunctions;
     # because the value is by default blank, we don't know if it's configured
     # as empty or not configured at all - exit code gives us that
     is(
-        $repo->cmd( config => '--get', 'gitflux.prefix.versiontag' ),
+        $repo->run( config => '--get', 'gitflux.prefix.versiontag' ),
         '',
         'versiontag created',
     );

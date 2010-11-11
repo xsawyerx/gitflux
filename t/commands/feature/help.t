@@ -11,7 +11,7 @@ use Test::More tests => 1;
 use TestFunctions;
 
 my ( $flux, $repo ) = default_env();
-my @data = $flux->cmd( feature => 'help' );
+my @data = $flux->run( feature => 'help' );
 
 like(
     $data[0],

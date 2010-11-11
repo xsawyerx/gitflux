@@ -18,7 +18,7 @@ use TestFunctions;
     my ( $flux, $repo ) = default_env();
 
     is(
-        exception { $flux->cmd('list') },
+        exception { $flux->run('list') },
         'fatal: Not a gitflux-enabled repo yet. ' .
             'Please run "git flux init" first.',
         'support list without branches fails',
@@ -42,7 +42,7 @@ You can start a new support branch:
 _END
 
     is(
-        exception { $flux->cmd('list') },
+        exception { $flux->run('list') },
         $output,
         'initialized without support',
     );
@@ -54,10 +54,10 @@ _END
 
     my ( $flux, $repo ) = default_env();
 
-    $flux->cmd( support => 'init', 'test_sup' );
+    $flux->run( support => 'init', 'test_sup' );
 
     is(
-        [ $flux->cmd( support => 'list' ) ],
+        [ $flux->run( support => 'list' ) ],
         ['test_sup'],
         'support branch is listable',
     );
