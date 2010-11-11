@@ -17,7 +17,7 @@ sub new {
     my $self  = {};
 
     $self->{'repo'} = $opts{'repo'}
-        || Git::Repository->create( work_tree => $dir );
+        || Git::Repository->new( work_tree => $dir );
 
     bless $self, $class;
 }
