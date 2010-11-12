@@ -5,6 +5,9 @@ use warnings;
 
 use Git::Repository;
 
+# common
+use mixin 'Git::Flux::Utils';
+
 # commands
 use mixin 'Git::Flux::Command::feature';
 
@@ -19,13 +22,14 @@ sub new {
     $self->{'repo'} = $opts{'repo'}
         || Git::Repository->new( work_tree => $dir );
 
+    # TODO: add variables here for prefix (origin, feature, etc.)
+
     bless $self, $class;
 }
 
 sub run {
     my $self = shift;
     my ( $cmd, @opts ) = @_;
-
     $self->$cmd(@opts);
 }
 
