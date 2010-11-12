@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+use File::Slurp;
 use File::Temp 'tempdir';
 use Cwd 'cwd';
 use Git::Repository;
@@ -18,6 +19,9 @@ sub create_empty_repo {
     my $orig = cwd();
     chdir $dir or die "Can't chdir back to $dir: $!";
     my $repo = Git::Repository->create('init');
+    write_file( 'README', '' );
+    $repo->run( add => 'README' );
+    $repo->run( commit => '-m', 'initializing gitflux' );
     chdir $orig or die "Can't chdir back to $orig: $!";
     return $repo;
 }
