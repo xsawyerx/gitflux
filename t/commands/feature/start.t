@@ -72,16 +72,20 @@ use Test::TinyMocker;
 {
     # exception thrown when cannot create branch
 
+    {
+        package Ztest;
+        sub close {1}
+        sub exit  {255}
+    }
+
     my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
 
     # cripple branch creation so it doesn't work
-    mock 'Git::Repository::Command'
-        => method 'run'
+    mock 'Git::Repository'
+        => method 'command'
         => should {
-            my $self = shift;
-            my $run = shift;
-            return;
+            return bless {}, 'Ztest';
         };
 
     is(
@@ -90,7 +94,7 @@ use Test::TinyMocker;
         'Recognizing git branch failure',
     );
 
-    unmock 'Git::Repository::Command' => method 'run';
+    unmock 'Git::Repository' => method 'command';
 }
 
 {
@@ -105,7 +109,7 @@ use Test::TinyMocker;
     );
 
     ok(
-        $flux->_branch_exists($branch),
+        $flux->git_branch_exists($branch),
         'branch was created successfully',
     );
 }
