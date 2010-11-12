@@ -9,8 +9,9 @@ use Git::Repository;
 use mixin 'Git::Flux::Utils';
 
 # commands
-use mixin 'Git::Flux::Command::feature';
 use mixin 'Git::Flux::Command::init';
+use mixin 'Git::Flux::Command::help';
+use mixin 'Git::Flux::Command::feature';
 
 our $VERSION = '0.01';
 
