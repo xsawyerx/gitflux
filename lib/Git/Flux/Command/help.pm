@@ -12,6 +12,7 @@ Gitflux help
 ... doesn't exist yet!
 _END_HELP
 
+    exit 0;
 }
 
 1;
