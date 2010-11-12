@@ -10,17 +10,17 @@ use mixin 'Git::Flux::Utils';
 
 # commands
 use mixin 'Git::Flux::Command::feature';
+use mixin 'Git::Flux::Command::init';
 
 our $VERSION = '0.01';
 
 sub new {
     my $class = shift;
     my %opts  = @_;
-    my $dir   = $opts{'dir'} || '.';
-    my $self  = {};
-
-    $self->{'repo'} = $opts{'repo'}
-        || Git::Repository->new( work_tree => $dir );
+    my $self  = {
+        dir  => $opts{'dir'},
+        repo => $opts{'repo'},
+    };
 
     # TODO: add variables here for prefix (origin, feature, etc.)
 
@@ -30,6 +30,13 @@ sub new {
 sub run {
     my $self = shift;
     my ( $cmd, @opts ) = @_;
+
+    if ( not defined $self->{'repo'} and $cmd ne 'init' ) {
+        # create the repo now
+        my $dir = $self->{'dir'} || '.';
+        $self->{'repo'} = Git::Repository->new( work_tree => $dir );
+    }
+
     $self->$cmd(@opts);
 }
 
