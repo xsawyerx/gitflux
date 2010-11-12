@@ -31,6 +31,9 @@ sub run {
     my $self = shift;
     my ( $cmd, @opts ) = @_;
 
+    # run help if no other cmd
+    $cmd ||= $self->help();
+
     if ( not defined $self->{'repo'} and $cmd ne 'init' ) {
         # create the repo now
         my $dir = $self->{'dir'} || '.';
