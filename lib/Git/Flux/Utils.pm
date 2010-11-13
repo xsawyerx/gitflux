@@ -131,7 +131,7 @@ sub git_compare_branches {
 }
 
 # Checks whether branch $1 is succesfully merged into $2
-sub git_is_merged_into {
+sub git_is_branch_merged_into {
     my $self               = shift;
     my ( $subject, $base ) = @_;
     my $repo               = $self->{'repo'};
