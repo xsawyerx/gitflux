@@ -37,11 +37,16 @@ sub run {
 
     if ( not defined $self->{'repo'} and $cmd ne 'init' ) {
         # create the repo now
-        my $dir = $self->{'dir'} || '.';
-        $self->{'repo'} = Git::Repository->new( work_tree => $dir );
+        $self->create_repo();
     }
 
     $self->$cmd(@opts);
+}
+
+sub create_repo {
+    my $self = shift;
+    my $dir  = $self->{'dir'} || '.';
+    $self->{'repo'} = Git::Repository->new( work_tree => $dir );
 }
 
 1;
