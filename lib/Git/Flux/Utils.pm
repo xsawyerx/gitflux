@@ -33,6 +33,10 @@ sub require_branches_equal {
 
 }
 
+sub is_interactive {
+    return -t STDIN && -t STDOUT;
+}
+
 1;
 
 __END__
@@ -58,6 +62,10 @@ Asserts that a branch exists.
 =head2 require_branches_equal( $branch1, $branch2 )
 
 Asserts that two branches are equal.
+
+=head2 is_interactive
+
+Returns boolean on whether we're in interactive mode.
 
 =head1 AUTHORS
 
