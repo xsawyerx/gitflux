@@ -100,9 +100,6 @@ sub git_tag_exists {
     grep { $_ eq $tag } @tags;
 }
 
-#
-# git_compare_branches()
-#
 # Tests whether branches and their "origin" counterparts have diverged and need
 # merging first. It returns error codes to provide more detail, like so:
 #
@@ -111,7 +108,6 @@ sub git_tag_exists {
 # 2    Second given branch needs fast-forwarding
 # 3    Branch needs a real merge
 # 4    There is no merge base, i.e. the branches have no common ancestors
-#
 sub git_compare_branches {
     my $self        = shift;
     my ( $c1, $c2 ) = @_;
@@ -132,6 +128,20 @@ sub git_compare_branches {
     } else {
         return 0;
     }
+}
+
+# Checks whether branch $1 is succesfully merged into $2
+sub git_is_merged_into {
+    my $self               = shift;
+    my ( $subject, $base ) = @_;
+    my $repo               = $self->{'repo'};
+
+    my @all_merges = map { $_ =~ s/^\*?\s+//; $_; }
+                    $repo->run(
+                        branch => qw/ --no-color --contains /, $subject
+                    );
+
+    return grep { $_ eq $base } @all_merges;
 }
 
 sub require_branch_absent {
