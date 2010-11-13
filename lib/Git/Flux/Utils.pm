@@ -50,6 +50,24 @@ sub git_current_branch {
     return $branch;
 }
 
+sub git_is_clean_working_tree {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    my $diff       = $repo->run(
+        diff => qw/ --no-ext-diff --ignore-submodules --quiet --exit-code /
+    );
+
+    my $diff_index = $repo->run(
+        'diff-index' => qw/ --cached --quiet --ignore-submodules HEAD -- /
+    );
+
+    $diff       and return 1;
+    $diff_index and return 2;
+
+    return 0;
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
