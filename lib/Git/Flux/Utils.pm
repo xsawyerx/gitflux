@@ -144,6 +144,38 @@ sub git_is_branch_merged_into {
     return grep { $_ eq $base } @all_merges;
 }
 
+sub gitflux_has_master_configured {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+    my $master = $repo->run( config => qw/ --get gitflux.branch.master / );
+
+    return defined $master &&
+           $master != ''   &&
+           $self->git_local_branch_exists($master);
+}
+
+sub gitflux_has_devel_configured {
+    my $self  = shift;
+    my $repo  = $self->{'repo'};
+    my $devel = $repo->run( config => qw/ --get gitflux.branch.devel / );
+
+    return defined $devel &&
+           $devel != ''   &&
+           $self->git_local_branch_exists($devel);
+}
+
+sub gitflux_has_prefixes_configured {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    return scalar $repo->run( config => qw/ --get gitflux.prefix.feature / ) &&
+           scalar $repo->run( config => qw/ --get gitflux.prefix.release / ) &&
+           scalar $repo->run( config => qw/ --get gitflux.prefix.hotfix /  ) &&
+           scalar $repo->run( config => qw/ --get gitflux.prefix.support / ) &&
+           scalar $repo->run( config => qw/ --get gitflux.prefix.versiontag / );
+}
+
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
