@@ -149,7 +149,7 @@ sub gitflux_has_master_configured {
     my $repo   = $self->{'repo'};
     my $master = $repo->run( config => qw/ --get gitflux.branch.master / );
 
-    return defined $master &&
+    return defined $master and
            $master != ''   &&
            $self->git_local_branch_exists($master);
 }
@@ -159,7 +159,7 @@ sub gitflux_has_devel_configured {
     my $repo  = $self->{'repo'};
     my $devel = $repo->run( config => qw/ --get gitflux.branch.devel / );
 
-    return defined $devel &&
+    return defined $devel and
            $devel != ''   &&
            $self->git_local_branch_exists($devel);
 }
