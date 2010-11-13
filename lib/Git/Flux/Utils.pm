@@ -253,6 +253,53 @@ sub gitflux_resolve_nameprefix {
     }
 }
 
+sub require_git_repo {
+    Git::Repository->new;
+}
+
+sub require_gitflux_initialized {
+    my $self = shift;
+
+    $self->gitflux_is_initialized
+        or die 'fatal: Not a gitflux-enabled repo yet. ' .
+               qq{Please run "git flux init" first.\n};
+}
+
+sub require_clean_working_tree {
+    my $self   = shift;
+    my $result = $self->git_is_clean_working_tree;
+
+    $result eq 1
+        and die "fatal: Working tree contains unstaged changes. Aborting.\n";
+
+    $result eq 2
+        and die "fatal: Index contains uncommitted changes. Aborting\n";
+}
+
+sub require_local_branch {
+    my $self = shift;
+    my $br   = shift;
+
+    $self->git_local_branch_exists($br)
+        or die "fatal: Local branch '$br' does not exist and is required.\n";
+}
+
+sub require_remote_branch {
+    my $self = shift;
+    my $br   = shift;
+
+    grep { $_ eq $br } $self->git_remote_branches
+        or die "Remote branch '$br' does not exist and is required.\n";
+}
+
+sub require_branch {
+    my $self = shift;
+    my $br   = shift;
+
+    grep { $_ eq $br } $self->git_all_branches
+        or die "Branch '$br' does not exist and is required.\n";
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
@@ -265,11 +312,32 @@ sub require_branch_absent {
     }
 }
 
+sub require_tag_absent {
+    my $self = shift;
+    my $tag  = shift;
+
+    grep { $_ eq $tag } $self->git_all_tags
+        or die "Tag '$tag' already exists. Pick another name.\n";
+}
+
 sub require_branches_equal {
     my $self          = shift;
     my ( $br1, $br2 ) = @_;
     my $repo          = $self->{'repo'};
 
+    my $result = $self->git_compare_branches( $br1, $br2 );
+
+    if ( $result > 0 ) {
+        warn "Branches '$br1' and '$br2' have diverged.\n";
+
+        if ( $status == 1 ) {
+            die "And branch '$br1' may be fast-forwarded.\n";
+        } elsif ( $status == 2 ) {
+            warn "And local branch '$br1' is ahead of '$br2'.\n";
+        } else {
+            die "Branches need merging first.\n";
+        }
+    }
 }
 
 sub is_interactive {
