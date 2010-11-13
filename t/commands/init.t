@@ -27,7 +27,7 @@ use TestFunctions;
 
     is_deeply(
         \@files,
-        [ '.', '..', '.git' ],
+        [ '..', '.git', '.' ],
         'init on non-git dir',
     );
 }
