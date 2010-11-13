@@ -55,7 +55,7 @@ sub git_branch_exists {
     my $branch   = shift;
     my @branches = $self->git_all_branches;
 
-    grep { $_ eq $branch } @branches );
+    grep { $_ eq $branch } @branches;
 }
 
 sub require_branches_equal {
