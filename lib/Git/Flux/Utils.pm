@@ -306,7 +306,7 @@ sub require_branch_absent {
     my $repo   = $self->{'repo'};
 
     grep { $_ eq $branch } $self->git_all_branches
-        die "Branch '$branch' already exists. Pick another name.\n";
+        or die "Branch '$branch' already exists. Pick another name.\n";
 }
 
 sub require_tag_absent {
@@ -322,9 +322,9 @@ sub require_branches_equal {
     my ( $br1, $br2 ) = @_;
     my $repo          = $self->{'repo'};
 
-    my $result = $self->git_compare_branches( $br1, $br2 );
+    my $status = $self->git_compare_branches( $br1, $br2 );
 
-    if ( $result > 0 ) {
+    if ( $status > 0 ) {
         warn "Branches '$br1' and '$br2' have diverged.\n";
 
         if ( $status == 1 ) {
