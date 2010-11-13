@@ -17,6 +17,8 @@ use TestFunctions;
     my $dir  = tempdir( CLEANUP => 1 );
     my $flux = Git::Flux->new( dir => $dir );
 
+    chdir $dir;
+
     $flux->run('init');
 
     opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
@@ -40,6 +42,8 @@ use TestFunctions;
 
     my $repo = create_empty_repo();
     my $flux = Git::Flux->new( dir => $repo->work_tree );
+
+    chdir $repo->work_tree;
 
     is(
         exception { $flux->run('init') },
