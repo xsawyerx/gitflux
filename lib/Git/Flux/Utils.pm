@@ -30,6 +30,14 @@ sub git_all_branches {
     return @branches;
 }
 
+sub git_all_tags {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+    my @tags = $repo->run('tag');
+
+    return @tags;
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
