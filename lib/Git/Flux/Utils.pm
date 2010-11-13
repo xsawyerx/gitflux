@@ -203,7 +203,7 @@ sub gitflux_load_settings {
     );
 
     $self->{'origin_branch'} = $repo->run(
-        config => qw/ --get gitflux.origin / )
+        config => qw/ --get gitflux.origin /
     ) || 'origin';
 }
 
