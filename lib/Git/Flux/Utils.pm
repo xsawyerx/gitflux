@@ -145,8 +145,8 @@ sub git_is_branch_merged_into {
 }
 
 sub gitflux_has_master_configured {
-    my $self = shift;
-    my $repo = $self->{'repo'};
+    my $self   = shift;
+    my $repo   = $self->{'repo'};
     my $master = $repo->run( config => qw/ --get gitflux.branch.master / );
 
     return defined $master &&
