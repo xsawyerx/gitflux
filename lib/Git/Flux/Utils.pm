@@ -305,11 +305,8 @@ sub require_branch_absent {
     my $branch = shift;
     my $repo   = $self->{'repo'};
 
-    my @branches = $self->git_all_branches;
-
-    if ( grep { $_ eq $branch } @branches ) {
+    grep { $_ eq $branch } $self->git_all_branches
         die "Branch '$branch' already exists. Pick another name.\n";
-    }
 }
 
 sub require_tag_absent {
