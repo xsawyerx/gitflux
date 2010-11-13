@@ -5,9 +5,8 @@ use warnings;
 use mixin::with 'Git::Flux';
 
 sub git_local_branches {
-    my $self = shift;
-    my $repo = $self->{'repo'};
-
+    my $self     = shift;
+    my $repo     = $self->{'repo'};
     my @branches = map { $_ =~ s/^\*?\s+//; $_; }
                   $repo->run( branch => '--no-color' );
 
@@ -15,9 +14,8 @@ sub git_local_branches {
 }
 
 sub git_remote_branches {
-    my $self = shift;
-    my $repo = $self->{'repo'};
-
+    my $self     = shift;
+    my $repo     = $self->{'repo'};
     my @branches = map { $_ =~ s/^\*?\s+//; $_; }
                    $repo->run( branch => '-r', '--no-color' );
 
@@ -25,13 +23,9 @@ sub git_remote_branches {
 }
 
 sub git_all_branches {
-    # get all branches
     my $self     = shift;
     my $repo     = $self->{'repo'};
-
-    my @branches = map { $_ =~ s/^\*?\s+//; $_; }
-                   map { $repo->run( @{$_}, '--no-color' ); }
-                   [ 'branch' ], [ branch => '-r' ]; 
+    my @branches = ( $self->git_local_branches, $self->git_remote_branches );
 
     return @branches;
 }
