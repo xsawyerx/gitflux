@@ -4,15 +4,44 @@ use strict;
 use warnings;
 use mixin::with 'Git::Flux';
 
+sub git_local_branches {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    my @branches = map { $_ =~ s/^\*?\s+//; $_; }
+                  $repo->run( branch => '--no-color' );
+
+    return @branches;
+}
+
+sub git_remote_branches {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    my @branches = map { $_ =~ s/^\*?\s+//; $_; }
+                   $repo->run( branch => '-r', '--no-color' );
+
+    return @branches;
+}
+
+sub git_all_branches {
+    # get all branches
+    my $self     = shift;
+    my $repo     = $self->{'repo'};
+
+    my @branches = map { $_ =~ s/^\*?\s+//; $_; }
+                   map { $repo->run( @{$_}, '--no-color' ); }
+                   [ 'branch' ], [ branch => '-r' ]; 
+
+    return @branches;
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
     my $repo   = $self->{'repo'};
 
-    # get all branches
-    my @branches = map { $_ =~ s/^\*?\s+//; $_; }
-                   map { $repo->run( @{$_}, '--no-color' ); }
-                   [ 'branch' ], [ branch => '-r' ]; 
+    my @branches = $self->git_all_branches;
 
     if ( grep { $_ eq $branch } @branches ) {
         die "Branch '$branch' already exists. Pick another name.\n";
@@ -20,10 +49,11 @@ sub require_branch_absent {
 }
 
 sub git_branch_exists {
-    my $self   = shift;
-    my $branch = shift;
-    my $repo   = $self->{'repo'};
+    my $self     = shift;
+    my $branch   = shift;
+    my @branches = $self->git_all_branches;
 
+    grep { $_ eq $branch } @branches );
 }
 
 sub require_branches_equal {
