@@ -207,6 +207,52 @@ sub gitflux_load_settings {
     ) || 'origin';
 }
 
+# Inputs:
+# $1 = name prefix to resolve
+# $2 = branch prefix to use
+#
+# Searches branch names from git_local_branches() to look for a unique
+# branch name whose name starts with the given name prefix.
+#
+# There are multiple exit codes possible:
+# 0: The unambiguous full name of the branch is written to stdout
+#    (success)
+# 1: No match is found.
+# 2: Multiple matches found. These matches are written to stderr
+sub gitflux_resolve_nameprefix {
+    my $self              = shift;
+    my ( $name, $prefix ) = @_;
+    my $repo              = $self->{'repo'};
+
+    # check for perfect match
+    if ( $self->git_local_branch_exists( $prefix . $name ) ) {
+        print "$name\n";
+        return 0;
+    }
+
+    my @matches = grep { $_ =~ /^$prefix$name/ }
+                  $self->git_local_branches;
+
+
+    if ( @matches == 0 ){
+        warn "No branch matches prefix '$name'\n";
+        return 1;
+    } else {
+        if ( @matches == 1 ) {
+            my $match = shift @matches;
+            $match =~ s/^\Q$prefix\E//;
+            warn "$match\n";
+
+            return 0;
+        } else {
+            warn "Multiple branches match prefix '$name':\n";
+            warn "- $_\n" for @matches;
+
+            return 2;
+        }
+    }
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
