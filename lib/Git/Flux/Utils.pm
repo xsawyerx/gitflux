@@ -76,6 +76,30 @@ sub git_repo_is_headless {
     return not $result;
 }
 
+sub git_local_branch_exists {
+    my $self     = shift;
+    my $branch   = shift;
+    my @branches = $self->git_local_branches;
+
+    grep { $_ eq $branch } @branches;
+}
+
+sub git_branch_exists {
+    my $self     = shift;
+    my $branch   = shift;
+    my @branches = $self->git_all_branches;
+
+    grep { $_ eq $branch } @branches;
+}
+
+sub git_tag_exists {
+    my $self = shift;
+    my $tag  = shift;
+    my @tags = $self->git_all_tags;
+
+    grep { $_ eq $tag } @tags;
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
@@ -86,14 +110,6 @@ sub require_branch_absent {
     if ( grep { $_ eq $branch } @branches ) {
         die "Branch '$branch' already exists. Pick another name.\n";
     }
-}
-
-sub git_branch_exists {
-    my $self     = shift;
-    my $branch   = shift;
-    my @branches = $self->git_all_branches;
-
-    grep { $_ eq $branch } @branches;
 }
 
 sub require_branches_equal {
