@@ -68,6 +68,14 @@ sub git_is_clean_working_tree {
     return 0;
 }
 
+sub git_repo_is_headless {
+    my $self   = shift;
+    my $repo   = $self->{'repo'};
+    my $result = $repo->run( 'rev-parse' => qw/ --quiet --verify HEAD / );
+
+    return not $result;
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
