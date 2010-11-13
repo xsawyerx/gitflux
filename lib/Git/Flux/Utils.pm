@@ -175,6 +175,37 @@ sub gitflux_has_prefixes_configured {
            scalar $repo->run( config => qw/ --get gitflux.prefix.versiontag / );
 }
 
+sub gitflux_is_initialized {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    return $self->gitflux_has_master_configured &&
+           $self->gitflux_has_devel_configured  &&
+           (
+               $repo->run( config => qw/ --get gitflux.branch.master / ) ne
+               $repo->run( config => qw/ --get gitflux.branch.devel /  )
+           )                                    &&
+           $self->gitflux_has_prefix_configured;
+}
+
+sub gitflux_load_settings {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    $self->{'dit_git_dir'}   = $repo->run( 'rev-parse' => '--git-dir' );
+
+    $self->{'master_branch'} = $repo->run(
+        config => qw/ --get gitflux.branch.master /
+    );
+
+    $self->{'devel_branch'}  = $repo->run(
+        config => qw/ --get gitflux.branch.devel /
+    );
+
+    $self->{'origin_branch'} = $repo->run(
+        config => qw/ --get gitflux.origin / )
+    ) || 'origin';
+}
 
 sub require_branch_absent {
     my $self   = shift;
