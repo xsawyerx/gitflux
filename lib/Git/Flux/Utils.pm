@@ -38,6 +38,18 @@ sub git_all_tags {
     return @tags;
 }
 
+sub git_current_branch {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+
+    my ($branch) = map  { $_ =~ s/^\*\s+//g; $_; }
+                   grep { $_ !~ /no branch/      }
+                   grep { $_ =~ /^\*\s/          }
+                   $repo->run( branch => '--no-color' );
+
+    return $branch;
+}
+
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
