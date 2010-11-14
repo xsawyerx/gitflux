@@ -6,6 +6,7 @@ use warnings;
 use lib 't/lib/';
 use Git::Flux;
 
+use File::Spec;
 use File::Temp 'tempdir';
 use Test::More tests => 11;
 use Test::Fatal;
@@ -25,11 +26,10 @@ use TestFunctions;
     my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
     closedir $dh            or die "Can't close dir '$dir': $!\n";
 
-    is_deeply(
-        \@files,
-        [ '..', '.git', '.' ],
-        'init on non-git dir',
-    );
+    is scalar @files, 3;
+    grep {
+        ok /\.(.|git)?/
+    } @files;
 }
 
 {
@@ -39,26 +39,25 @@ use TestFunctions;
 
 {
     # requiring clean working directory
-
     my ( $flux, $repo ) = default_env();
-
     chdir $repo->work_tree;
-
-    is(
-        exception { $flux->run('init') },
-        'fatal: Working tree contains unstaged changes. Aborting.',
-        'require clean working directory (unstaged)',
-    );
-
-    my $file = file( $repo->work_tree, 'test' );
+    $flux->{repo} = $repo;
+    
+    my $file = File::Spec->catfile( $repo->work_tree, 'test' );
     open my $fh, '>', $file        or die "Can't open file '$file': $!\n";
     print {$fh} "blah blah blah\n" or die "Can't print to file '$file': $!\n";
     close $fh                      or die "Can't close file '$file': $!\n";
 
+    is(
+        exception { $flux->require_clean_working_tree },
+        'fatal: Working tree contains unstaged changes. Aborting.',
+        'require clean working directory (unstaged)',
+    );
+
     $repo->run( add => $file );
 
     is(
-        exception { $flux->run('init') },
+        exception { $flux->require_clean_working_tree },
         'fatal: Index contains uncommited changes. Aborting.',
         'require clean working directory (uncommited)',
     );
@@ -72,8 +71,8 @@ use TestFunctions;
 
     is(
         exception { $flux->run('init') },
-        "Already initialized for gitflux\n" .
-            'To force reinitialization, use: git flow init -f',
+        "Already initialized for gitflux.\n" .
+            "To force reinitialization, use: git flux init -f\n",
         'reinit without force fails',
     );
 }
@@ -93,7 +92,6 @@ use TestFunctions;
         ! exception { $flux->run( 'init' => '-f' ) },
         'reinit with force succeeds',
     );
-
 }
 
 {
@@ -103,12 +101,7 @@ use TestFunctions;
 
 {
     # fresh git repo, branches will get created
-
-    my $repo = create_empty_repo();
-    my $flux = Git::Flux->new(
-        dir   => $repo->work_tree,
-        quiet => 1, # don't ask, just do it
-    );
+    my ( $flux, $repo ) = default_env();
 
     # check that everything was created successfully
     is(
@@ -130,7 +123,7 @@ use TestFunctions;
     # as empty or not configured at all - exit code gives us that
     is(
         $repo->run( config => '--get', 'gitflux.prefix.versiontag' ),
-        '',
+        'v',
         'versiontag created',
     );
 }

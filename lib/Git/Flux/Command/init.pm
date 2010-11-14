@@ -10,7 +10,6 @@ sub init {
     my $self  = shift;
     my $force = shift;
     my $dir   = $self->{'dir'};
-    my $term  = Term::ReadLine->new('Gitflux');
 
     my ( $repo, $master_branch );
 
@@ -18,7 +17,7 @@ sub init {
         $force eq '-f' or die "Improper opt to init: $force\n";
     }
 
-    try     { Git::Repository->new( work_tree => $dir ) }
+    try     { $repo = $self->{'repo'} = Git::Repository->new( work_tree => $dir ) }
     catch   {
         $repo = $self->{'repo'} =
             Git::Repository->create( 'init' => { cwd => $dir } );
@@ -56,9 +55,10 @@ sub init {
             print "\nWhich branch should be used for production releases?\n";
             print map { $_=~ s/^(.*)$/   - $1/; $_; } $self->git_local_branches;
             $check_existence = 1;
-            my @guesses =
-                ( $repo->run( config => qw/ --get gitflux.branch.master / ),
-                qw/ production main master / );
+            my @guesses = (
+                $repo->run( config => qw/ --get gitflux.branch.master / ),
+                qw/ production main master /
+            );
 
             foreach my $guess (@guesses) {
                 if ( $self->git_local_branch_exists($guess) ) {
