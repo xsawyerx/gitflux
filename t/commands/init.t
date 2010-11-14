@@ -40,8 +40,7 @@ use TestFunctions;
 {
     # requiring clean working directory
 
-    my $repo = create_empty_repo();
-    my $flux = Git::Flux->new( dir => $repo->work_tree );
+    my ( $flux, $repo ) = default_env();
 
     chdir $repo->work_tree;
 
