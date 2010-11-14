@@ -48,8 +48,8 @@ sub init {
 
         if ( @local_branches == 0 ) {
             print "No branches exist yet. Base branches must be created now.\n";
-            $check_existence   = 0;
-            $default_suggstion = $repo->run(
+            $check_existence    = 0;
+            $default_suggestion = $repo->run(
                 config => qw/ --get gitflux.branch.master /
             ) || 'master';
         } else {
@@ -57,11 +57,11 @@ sub init {
             print map { $_=~ s/^(.*)$/   - $1/; $_; } $self->git_local_branches;
             $check_existence = 1;
             my @guesses =
-                $repo->run( config => qw/ --get gitflux.branch.master / ),
-                qw/ production main master /;
+                ( $repo->run( config => qw/ --get gitflux.branch.master / ),
+                qw/ production main master / );
 
             foreach my $guess (@guesses) {
-                if ( $self->git_local_branch_exists($guess) {
+                if ( $self->git_local_branch_exists($guess) ) {
                     $default_suggestion = $guess;
                     last;
                 }
@@ -71,8 +71,8 @@ sub init {
         my $prompt = 'Branch name for production releases: ' .
                      "[$default_suggestion] ";
 
-        my $answer        = readline($prompt);
-        my $master_branch = $answer || $default_suggestion;
+        my $answer     = readline($prompt);
+        $master_branch = $answer || $default_suggestion;
 
         if ($check_existence) {
             $self->git_local_branch_exists($master_branch)
