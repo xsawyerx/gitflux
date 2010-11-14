@@ -8,7 +8,7 @@ use Git::Flux;
 
 use File::Spec;
 use File::Temp 'tempdir';
-use Test::More tests => 11;
+use Test::More tests => 14;
 use Test::Fatal;
 use Test::TinyMocker;
 use TestFunctions;
@@ -18,8 +18,6 @@ use TestFunctions;
 
     my $dir  = tempdir( CLEANUP => 1 );
     my $flux = Git::Flux->new( dir => $dir );
-
-    chdir $dir;
 
     $flux->run('init');
 
@@ -40,8 +38,6 @@ use TestFunctions;
     # requiring clean working directory
     my $repo = create_empty_repo();
     my $flux = Git::Flux->new( dir => $repo->work_tree );
-
-    chdir $repo->work_tree;
 
     my $file = File::Spec->catfile( $repo->work_tree, 'test' );
     write_file( $file, "blah blah blah\n" );
