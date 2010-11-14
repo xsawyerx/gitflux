@@ -43,13 +43,14 @@ use TestFunctions;
     chdir $repo->work_tree;
 
     my $file = File::Spec->catfile( $repo->work_tree, 'test' );
-    open my $fh, '>', $file        or die "Can't open file '$file': $!\n";
-    print {$fh} "blah blah blah\n" or die "Can't print to file '$file': $!\n";
-    close $fh                      or die "Can't close file '$file': $!\n";
+    write_file( $file, "blah blah blah\n" );
+    $repo->run( add => $file );
+    $repo->run('commit' => '-m', 'test' );
+    append_file( $file, "Dirty it up\n" );
 
     is(
         exception { $flux->run('init') },
-        'fatal: Working tree contains unstaged changes. Aborting.',
+        "fatal: Working tree contains unstaged changes. Aborting.\n",
         'require clean working directory (unstaged)',
     );
 
@@ -57,7 +58,7 @@ use TestFunctions;
 
     is(
         exception { $flux->run('init') },
-        'fatal: Index contains uncommited changes. Aborting.',
+        "fatal: Index contains uncommitted changes. Aborting.\n",
         'require clean working directory (uncommited)',
     );
 }
