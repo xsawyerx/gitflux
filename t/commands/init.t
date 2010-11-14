@@ -89,7 +89,7 @@ use TestFunctions;
 
     my ( $flux, $repo ) = default_env();
     my @rounds = (
-        'Branch name for production releases [master] ',
+        qr/^Branch name for production releases: \[master\]/,
     );
 
     mock 'Term::ReadLine::Stub'
@@ -97,7 +97,8 @@ use TestFunctions;
         => should {
             my $round = shift @rounds;
             isa_ok( $_[0], 'Term::ReadLine::Stub' );
-            like( $_[1], qr/^$round/, 'Correct question' );
+
+            like( $_[1], $round, 'Correct question' );
         };
 
     ok(
@@ -133,11 +134,10 @@ use TestFunctions;
     # FIXME: we need to find out the exit code of this instead of the value
     # because the value is by default blank, we don't know if it's configured
     # as empty or not configured at all - exit code gives us that
-    is(
-        $repo->run( config => '--get', 'gitflux.prefix.versiontag' ),
-        'v',
-        'versiontag created',
-    );
+    my $cmd = $repo->command( config => qw/ --get gitflux.prefix.versiontag / );
+    $cmd->close;
+
+    cmp_ok( $cmd->exit, '==', 0, 'versiontag created' );
 }
 
 # - renaming the branches before creation         = ok
