@@ -97,8 +97,8 @@ use TestFunctions;
         => should {
             my $round = shift @rounds;
             isa_ok( $_[0], 'Term::ReadLine::Stub' );
-
             like( $_[1], $round, 'Correct question' );
+            return;
         };
 
     ok(
