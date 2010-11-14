@@ -12,7 +12,7 @@ sub init {
     my $dir   = $self->{'dir'};
     my $term = Term::ReadLine->new('Gitflux');
 
-    my ( $failed, $repo, $master_branch );
+    my ( $failed, $repo, $master_branch, $devel_branch, $prefix );
 
     if ($force) {
         $force eq '-f' or die "Improper opt to init: $force\n";
@@ -37,6 +37,7 @@ sub init {
             "To force reinitialization, use: git flux init -f\n";
     }
 
+    # set up master branch
     if ( $self->gitflux_has_master_configured && ! $force ) {
         $master_branch =
             $repo->run( config => qw/ --get  gitflux.branch.master / );
@@ -48,7 +49,7 @@ sub init {
         #    We will disallow creation of new master/devel branches and
         #    rather allow to use existing branches for git-flow.
         my ( $check_existence, $default_suggestion );
-        my @local_branches  = $self->git_local_branches;
+        my @local_branches = $self->git_local_branches;
 
         if ( @local_branches == 0 ) {
             print "No branches exist yet. Base branches must be created now.\n";
@@ -92,6 +93,64 @@ sub init {
         $repo->run( config => 'gitflux.branch.master', $master_branch );
     }
 
+    # set up devel branch
+    if ( $self->gitflux_has_devel_configured && ! $force ) {
+        $devel_branch = $repo->run( config => qw/--get gitflux.branch.devel/ );
+    } else {
+        # Again, the same two cases as with the master selection are
+        # considered (fresh repo or repo that contains branches)
+        my ( $check_existence, $default_suggestion );
+        my @local_branches_wo_master = grep { $_ !~ /^\Q$master_branch\E$/ }
+            $self->git_local_branches;
+
+        if ( @local_branches_wo_master == 0 ) {
+            $check_existence = 0;
+            $default_suggestion = $repo->run(
+                config => qw/ --get gitflux.branch.devel /
+            ) || 'devel';
+        } else {
+            print "\nWhich branch should be used for integration of the " .
+                  "\"next release\"?\n";
+            print map { $_=~ s/^(.*)$/   - $1/; $_; }
+                grep { $_ !~ /^\Q$master_branch$/ } $self->git_local_branches;
+            print "\n";
+
+            $check_existence = 1;
+            my @guesses = (
+                $repo->run( config => qw/ --get gitflux.branch.devel / ),
+                qw/ devel develop int integration master /
+            );
+
+            foreach my $guess (@guesses) {
+                if ( $self->git_local_branch_exists($guess) ) {
+                    $default_suggestion = $guess;
+                    last;
+                }
+            }
+        }
+
+        # on and on
+
+        my $prompt = 'Branch name for "next release" development: ' .
+                     "[$default_suggestion] ";
+
+        my $answer = $self->is_interactive    ?
+                     $term->readline($prompt) :
+                     $default_suggestion;
+
+        $devel_branch = $answer || $default_suggestion;
+
+        if ( $master_branch eq $devel_branch ) {
+            die "Production and integration branches should differ.\n";
+        }
+
+        if ($check_existence) {
+            $self->git_local_branch_exists($devel_branch)
+                or die "Local branch '$devel_branch' does not exist.\n";
+        }
+
+        $repo->run( config => 'gitflux.branch.devel', $devel_branch );
+    }
 }
 
 1;
