@@ -3,6 +3,7 @@ package Git::Flux::Utils;
 use strict;
 use warnings;
 use mixin::with 'Git::Flux';
+use List::MoreUtils 'all';
 
 sub git_local_branches {
     my $self     = shift;
@@ -169,14 +170,13 @@ sub gitflux_has_devel_configured {
 }
 
 sub gitflux_has_prefixes_configured {
-    my $self = shift;
-    my $repo = $self->{'repo'};
+    my $self    = shift;
+    my $repo    = $self->{'repo'};
+    my @results = map {
+        $repo->run( config => '--get', "gitflux.prefix.$_" );
+    } qw/ feature release hotfix support versiontag /;
 
-    return scalar $repo->run( config => qw/ --get gitflux.prefix.feature / ) &&
-           scalar $repo->run( config => qw/ --get gitflux.prefix.release / ) &&
-           scalar $repo->run( config => qw/ --get gitflux.prefix.hotfix /  ) &&
-           scalar $repo->run( config => qw/ --get gitflux.prefix.support / ) &&
-           scalar $repo->run( config => qw/ --get gitflux.prefix.versiontag / );
+    return all { defined $_ and $_ } @results;
 }
 
 sub gitflux_is_initialized {
