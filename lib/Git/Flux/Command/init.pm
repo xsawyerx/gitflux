@@ -11,21 +11,25 @@ sub init {
     my $force = shift;
     my $dir   = $self->{'dir'};
 
-    my ( $repo, $master_branch );
+    my ( $failed, $repo, $master_branch );
 
     if ($force) {
         $force eq '-f' or die "Improper opt to init: $force\n";
     }
 
-    try     { $repo = $self->{'repo'} = Git::Repository->new( work_tree => $dir ) }
+    try     {
+        $repo = $self->{'repo'} =
+            Git::Repository->new( work_tree => $dir ) }
     catch   {
         $repo = $self->{'repo'} =
             Git::Repository->create( 'init' => { cwd => $dir } );
     } finally {
-        unless (@_) {
-            $self->git_repo_is_headless or $self->require_clean_working_tree;
-        }
+        @_ and $failed++;
     };
+
+    unless ($failed) {
+        $self->git_repo_is_headless or $self->require_clean_working_tree;
+    }
 
     if ( $self->gitflux_is_initialized && ! $force ) {
         die "Already initialized for gitflux.\n" .
