@@ -26,10 +26,8 @@ use TestFunctions;
     my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
     closedir $dh            or die "Can't close dir '$dir': $!\n";
 
-    is scalar @files, 3;
-    grep {
-        ok /\.(.|git)?/
-    } @files;
+    cmp_ok( scalar @files, '==', 3, 'Corrent number of files on init' );
+    is_deeply( \@files, [qw/ .. .git . /], 'Corrent files/dirs created' );
 }
 
 {
