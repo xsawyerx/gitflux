@@ -18,7 +18,7 @@ sub init {
         $force eq '-f' or die "Improper opt to init: $force\n";
     }
 
-    try     { Git::Repository->new( work_tree => $dir ) }
+    try     { $repo = $self->{'repo'} = Git::Repository->new( work_tree => $dir ) }
     catch   {
         $repo = $self->{'repo'} =
             Git::Repository->create( 'init' => { cwd => $dir } );
@@ -49,7 +49,7 @@ sub init {
         if ( @local_branches == 0 ) {
             print "No branches exist yet. Base branches must be created now.\n";
             $check_existence   = 0;
-            $default_suggstion = $repo->run(
+            $default_suggestion = $repo->run(
                 config => qw/ --get gitflux.branch.master /
             ) || 'master';
         } else {
@@ -57,11 +57,11 @@ sub init {
             print map { $_=~ s/^(.*)$/   - $1/; $_; } $self->git_local_branches;
             $check_existence = 1;
             my @guesses =
-                $repo->run( config => qw/ --get gitflux.branch.master / ),
+                map {$repo->run( config => qw/ --get gitflux.branch.master / )}
                 qw/ production main master /;
 
             foreach my $guess (@guesses) {
-                if ( $self->git_local_branch_exists($guess) {
+                if ( $self->git_local_branch_exists($guess)) {
                     $default_suggestion = $guess;
                     last;
                 }
@@ -71,8 +71,8 @@ sub init {
         my $prompt = 'Branch name for production releases: ' .
                      "[$default_suggestion] ";
 
-        my $answer        = readline($prompt);
-        my $master_branch = $answer || $default_suggestion;
+        my $answer        = $term->readline($prompt);
+        $master_branch = $answer || $default_suggestion;
 
         if ($check_existence) {
             $self->git_local_branch_exists($master_branch)

@@ -185,7 +185,7 @@ sub gitflux_is_initialized {
                $repo->run( config => qw/ --get gitflux.branch.master / ) ne
                $repo->run( config => qw/ --get gitflux.branch.devel /  )
            )                                    &&
-           $self->gitflux_has_prefix_configured;
+           $self->gitflux_has_prefixes_configured;
 }
 
 sub gitflux_load_settings {
