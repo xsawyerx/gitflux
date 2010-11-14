@@ -10,6 +10,7 @@ sub init {
     my $self  = shift;
     my $force = shift;
     my $dir   = $self->{'dir'};
+    my $term = Term::ReadLine->new('Gitflux');
 
     my ( $failed, $repo, $master_branch );
 
@@ -42,9 +43,9 @@ sub init {
     } else {
         # Two cases are distinguished:
         # 1. A fresh git repo (without any branches)
-        #    We will create a new master/develop branch for the user
+        #    We will create a new master/devel branch for the user
         # 2. Some branches do already exist
-        #    We will disallow creation of new master/develop branches and
+        #    We will disallow creation of new master/devel branches and
         #    rather allow to use existing branches for git-flow.
         my ( $check_existence, $default_suggestion );
         my @local_branches  = $self->git_local_branches;
@@ -58,6 +59,8 @@ sub init {
         } else {
             print "\nWhich branch should be used for production releases?\n";
             print map { $_=~ s/^(.*)$/   - $1/; $_; } $self->git_local_branches;
+            print "\n";
+
             $check_existence = 1;
             my @guesses = (
                 $repo->run( config => qw/ --get gitflux.branch.master / ),
@@ -75,7 +78,10 @@ sub init {
         my $prompt = 'Branch name for production releases: ' .
                      "[$default_suggestion] ";
 
-        my $answer     = readline($prompt);
+        my $answer = $self->is_interactive    ?
+                     $term->readline($prompt) :
+                     $default_suggestion;
+
         $master_branch = $answer || $default_suggestion;
 
         if ($check_existence) {
