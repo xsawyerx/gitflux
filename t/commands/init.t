@@ -37,17 +37,18 @@ use TestFunctions;
 
 {
     # requiring clean working directory
-    my ( $flux, $repo ) = default_env();
+    my $repo = create_empty_repo();
+    my $flux = Git::Flux->new( dir => $repo->work_tree );
+
     chdir $repo->work_tree;
-    $flux->{repo} = $repo;
-    
+
     my $file = File::Spec->catfile( $repo->work_tree, 'test' );
     open my $fh, '>', $file        or die "Can't open file '$file': $!\n";
     print {$fh} "blah blah blah\n" or die "Can't print to file '$file': $!\n";
     close $fh                      or die "Can't close file '$file': $!\n";
 
     is(
-        exception { $flux->require_clean_working_tree },
+        exception { $flux->run('init') },
         'fatal: Working tree contains unstaged changes. Aborting.',
         'require clean working directory (unstaged)',
     );
@@ -55,7 +56,7 @@ use TestFunctions;
     $repo->run( add => $file );
 
     is(
-        exception { $flux->require_clean_working_tree },
+        exception { $flux->run('init') },
         'fatal: Index contains uncommited changes. Aborting.',
         'require clean working directory (uncommited)',
     );
