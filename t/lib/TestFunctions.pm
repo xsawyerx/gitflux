@@ -29,9 +29,9 @@ sub create_empty_repo {
 sub configure_default_repo {
     my $repo = shift;
 
-    # got master, develop configured
-    $repo->run( config => 'gitflux.branch.master',  'master'  );
-    $repo->run( config => 'gitflux.branch.develop', 'develop' );
+    # got master, devel configured
+    $repo->run( config => 'gitflux.branch.master', 'master' );
+    $repo->run( config => 'gitflux.branch.devel',  'devel'  );
 
     # has prefixes configured for every branch
     # (feature, release, hotfix, support)
