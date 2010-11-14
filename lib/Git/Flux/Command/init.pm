@@ -4,11 +4,13 @@ use strict;
 use warnings;
 use mixin::with 'Git::Flux';
 use Try::Tiny;
+use Term::ReadLine;
 
 sub init {
     my $self  = shift;
     my $force = shift;
     my $dir   = $self->{'dir'};
+    my $term  = Term::ReadLine->new('Gitflux');
 
     my ( $repo, $master_branch );
 
@@ -35,8 +37,51 @@ sub init {
         $master_branch =
             $repo->run( config => qw/ --get  gitflux.branch.master / );
     } else {
+        # Two cases are distinguished:
+        # 1. A fresh git repo (without any branches)
+        #    We will create a new master/develop branch for the user
+        # 2. Some branches do already exist
+        #    We will disallow creation of new master/develop branches and
+        #    rather allow to use existing branches for git-flow.
+        my ( $check_existence, $default_suggestion );
+        my @local_branches  = $self->git_local_branches;
 
+        if ( @local_branches == 0 ) {
+            print "No branches exist yet. Base branches must be created now.\n";
+            $check_existence   = 0;
+            $default_suggstion = $repo->run(
+                config => qw/ --get gitflux.branch.master /
+            ) || 'master';
+        } else {
+            print "\nWhich branch should be used for production releases?\n";
+            print map { $_=~ s/^(.*)$/   - $1/; $_; } $self->git_local_branches;
+            $check_existence = 1;
+            my @guesses =
+                $repo->run( config => qw/ --get gitflux.branch.master / ),
+                qw/ production main master /;
+
+            foreach my $guess (@guesses) {
+                if ( $self->git_local_branch_exists($guess) {
+                    $default_suggestion = $guess;
+                    last;
+                }
+            }
+        }
+
+        my $prompt = 'Branch name for production releases: ' .
+                     "[$default_suggestion] ";
+
+        my $answer        = readline($prompt);
+        my $master_branch = $answer || $default_suggestion;
+
+        if ($check_existence) {
+            $self->git_local_branch_exists($master_branch)
+                or die "Local branch '$master_branch' does not exist.\n";
+        }
+
+        $repo->run( config => 'gitflux.branch.master', $master_branch );
     }
+
 }
 
 1;
