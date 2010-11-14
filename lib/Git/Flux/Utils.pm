@@ -54,13 +54,17 @@ sub git_is_clean_working_tree {
     my $self = shift;
     my $repo = $self->{'repo'};
 
-    my $diff       = $repo->run(
+    my $cmd = $repo->command(
         diff => qw/ --no-ext-diff --ignore-submodules --quiet --exit-code /
     );
+    $cmd->close;
+    my $diff = $cmd->exit;
 
-    my $diff_index = $repo->run(
+    $cmd = $repo->command(
         'diff-index' => qw/ --cached --quiet --ignore-submodules HEAD -- /
     );
+    $cmd->close;
+    my $diff_index = $cmd->exit;
 
     $diff       and return 1;
     $diff_index and return 2;
@@ -273,7 +277,7 @@ sub require_clean_working_tree {
         and die "fatal: Working tree contains unstaged changes. Aborting.\n";
 
     $result eq 2
-        and die "fatal: Index contains uncommitted changes. Aborting\n";
+        and die "fatal: Index contains uncommitted changes. Aborting.\n";
 }
 
 sub require_local_branch {
