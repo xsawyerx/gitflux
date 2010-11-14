@@ -10,6 +10,7 @@ use File::Spec;
 use File::Temp 'tempdir';
 use Test::More tests => 11;
 use Test::Fatal;
+use Test::TinyMocker;
 use TestFunctions;
 
 {
@@ -64,7 +65,7 @@ use TestFunctions;
 }
 
 {
-    # init on existing repo without force
+    # init on existing gitflux repo without force
     # shouldn't work
 
     my ( $flux, $repo ) = default_env();
@@ -78,7 +79,7 @@ use TestFunctions;
 }
 
 {
-    # TODO: git flow isn't initialized if the master is the same as the develop
+    # TODO: git flow isn't initialized if the master is the same as the devel
     1;
 }
 
@@ -87,6 +88,17 @@ use TestFunctions;
     # should work
 
     my ( $flux, $repo ) = default_env();
+    my @rounds = (
+        'Branch name for production releases [master] ',
+    );
+
+    mock 'Term::ReadLine::Stub'
+        => method 'readline'
+        => should {
+            my $round = shift @rounds;
+            isa_ok( $_[0], 'Term::ReadLine::Stub' );
+            like( $_[1], qr/^$round/, 'Correct question' );
+        };
 
     ok(
         ! exception { $flux->run( 'init' => '-f' ) },
