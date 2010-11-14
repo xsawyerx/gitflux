@@ -8,7 +8,7 @@ use Git::Flux;
 
 use File::Spec;
 use File::Temp 'tempdir';
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Test::Fatal;
 use Test::TinyMocker;
 use TestFunctions;
@@ -86,6 +86,7 @@ use TestFunctions;
     my ( $flux, $repo ) = default_env();
     my @rounds = (
         qr/^Branch name for production releases: \[master\]/,
+        qr/^Branch name for "next release" development: \[devel\]/,
     );
 
     mock 'Term::ReadLine::Stub'
