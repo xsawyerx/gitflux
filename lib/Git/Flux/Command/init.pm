@@ -226,6 +226,8 @@ sub init {
                          $term->readline($prompt) :
                          $default_suggestion;
 
+            defined $answer or $answer = $default_suggestion;
+
             # - means empty prefix, otherwise take the answer (or default)
             defined $answer && $answer eq '-' or $prefix = $answer;
 
