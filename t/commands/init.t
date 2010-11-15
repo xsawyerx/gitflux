@@ -14,22 +14,6 @@ use Test::TinyMocker;
 use TestFunctions;
 
 {
-    # if we can't find GITDIR, we init
-
-    my $dir  = tempdir( CLEANUP => 1 );
-    my $flux = Git::Flux->new( dir => $dir );
-
-    $flux->run('init');
-
-    opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
-    my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
-    closedir $dh            or die "Can't close dir '$dir': $!\n";
-
-    cmp_ok( scalar @files, '==', 3, 'Corrent number of files on init' );
-    is_deeply( \@files, [qw/ .. .git . /], 'Corrent files/dirs created' );
-}
-
-{
     # TODO: the headless part... anyone?
     1;
 }
@@ -85,13 +69,13 @@ use TestFunctions;
 
     my ( $flux, $repo ) = default_env();
     my @rounds = (
-        qr/^Branch name for production releases: \[master\]/,
-        qr/^Branch name for "next release" development: \[devel\]/,
-        qr/^Feature branches? \[feature\/\]/,
-        qr/^Release branches? \[release\/\]/,
-        qr/^Hotfix branches? \[hotfix\/\]/,
-        qr/^Support branches? \[support\/\]/,
-        qr/^Version tag prefix? \[\]/,
+        qr/^Branch name for production releases: \[master\]/,       'master/',
+        qr/^Branch name for "next release" development: \[devel\]/, 'devel/',
+        qr/^Feature branches? \[feature\/\]/,                       'feature/',
+        qr/^Release branches? \[release\/\]/,                       'release/',
+        qr/^Hotfix branches? \[hotfix\/\]/,                         'hotfix/',
+        qr/^Support branches? \[support\/\]/,                       'support/',
+        qr/^Version tag prefix? \[\]/,                              'v',
     );
 
     mock 'Term::ReadLine::Stub'
@@ -100,13 +84,23 @@ use TestFunctions;
             my $round = shift @rounds;
             isa_ok( $_[0], 'Term::ReadLine::Stub' );
             like( $_[1], $round, 'Correct question' );
-            return;
+
+            # reply
+            return shift @rounds;
         };
 
     ok(
         ! exception { $flux->run( 'init' => '-f' ) },
         'reinit with force succeeds',
     );
+
+    my $dir = $repo->work_tree;
+    opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
+    my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
+    closedir $dh            or die "Can't close dir '$dir': $!\n";
+
+    cmp_ok( scalar @files, '==', 3, 'Corrent number of files on init' );
+    is_deeply( \@files, [qw/ .. .git . /], 'Corrent files/dirs created' );
 }
 
 {
