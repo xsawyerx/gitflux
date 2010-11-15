@@ -214,6 +214,8 @@ sub init {
                 config => '--get', "gitflux.prefix.$type"
             ) || $type;
 
+            $default_suggestion .= '/';
+
             # version tag has its own default suggestion
             $type eq 'versiontag' and $default_suggestion = 'v';
 
@@ -226,10 +228,12 @@ sub init {
                          $term->readline($prompt) :
                          $default_suggestion;
 
-            defined $answer or $answer = $default_suggestion;
+            chomp $answer;
+            $answer ne '' or $answer = $default_suggestion;
 
             # - means empty prefix, otherwise take the answer (or default)
-            defined $answer && $answer eq '-' or $prefix = $answer;
+            ( defined $answer and $answer eq '-' )
+                or $prefix = $answer;
 
             $repo->run( config => "gitflux.prefix.$type", $prefix );
         }
