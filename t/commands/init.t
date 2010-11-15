@@ -99,8 +99,13 @@ use TestFunctions;
     my @files = readdir $dh or die "Can't read dir '$dir': $!\n";
     closedir $dh            or die "Can't close dir '$dir': $!\n";
 
-    cmp_ok( scalar @files, '==', 3, 'Corrent number of files on init' );
-    is_deeply( \@files, [qw/ .. .git . /], 'Corrent files/dirs created' );
+    cmp_ok( scalar @files, '==', 4, 'Corrent number of files on init' );
+
+    is_deeply(
+        [ sort @files],
+        [qw/ . .. .git README /],
+        'Corrent files/dirs created',
+    );
 }
 
 {
