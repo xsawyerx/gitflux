@@ -13,6 +13,29 @@ use Test::Fatal;
 use Test::TinyMocker;
 use TestFunctions;
 
+my $roundc = 0;
+my @rounds = (
+    qr/^Branch name for production releases: \[master\]/,
+    qr/^Branch name for "next release" development: \[devel\]/,
+    qr/^Feature branches\? \[feature\/\]/,
+    qr/^Release branches\? \[release\/\]/,
+    qr/^Hotfix branches\? \[hotfix\/\]/,
+    qr/^Support branches\? \[support\/\]/,
+    qr/^Version tag prefix\? \[v\]/,
+);
+
+# rotate over the possible questions
+mock 'Term::ReadLine::Stub'
+    => method 'readline'
+    => should {
+        my $round = $rounds[$roundc++];
+
+        isa_ok( $_[0], 'Term::ReadLine::Stub' );
+        like( $_[1], $round, 'Correct question' );
+
+        return;
+    };
+
 {
     # TODO: the headless part... anyone?
     1;
@@ -35,6 +58,8 @@ use TestFunctions;
         'require clean working directory (unstaged)',
     );
 
+    $roundc = 0;
+
     $repo->run( add => $file );
 
     is(
@@ -42,13 +67,18 @@ use TestFunctions;
         "fatal: Index contains uncommitted changes. Aborting.\n",
         'require clean working directory (uncommited)',
     );
+
+    $roundc = 0;
 }
 
 {
     # init on existing gitflux repo without force
     # shouldn't work
 
-    my ( $flux, $repo ) = default_env();
+    my $dir  = tempdir( CLEANUP => 1 );
+    my $flux = Git::Flux->new( dir => $dir );
+
+    $flux->run('init');
 
     is(
         exception { $flux->run('init') },
@@ -56,6 +86,8 @@ use TestFunctions;
             "To force reinitialization, use: git flux init -f\n",
         'reinit without force fails',
     );
+
+    $roundc = 0;
 }
 
 {
@@ -68,30 +100,14 @@ use TestFunctions;
     # should work
 
     my ( $flux, $repo ) = default_env();
-    my @rounds = (
-        qr/^Branch name for production releases: \[master\]/,
-        qr/^Branch name for "next release" development: \[devel\]/,
-        qr/^Feature branches\? \[feature\/\]/,
-        qr/^Release branches\? \[release\/\]/,
-        qr/^Hotfix branches\? \[hotfix\/\]/,
-        qr/^Support branches\? \[support\/\]/,
-        qr/^Version tag prefix\? \[v\]/,
-    );
-
-    mock 'Term::ReadLine::Stub'
-        => method 'readline'
-        => should {
-            my $round = shift @rounds;
-            isa_ok( $_[0], 'Term::ReadLine::Stub' );
-            like( $_[1], $round, 'Correct question' );
-            return;
-        };
 
     is(
         exception { $flux->run( 'init' => '-f' ) },
         undef,
         'reinit with force succeeds',
     );
+
+    $roundc = 0;
 
     my $dir = $repo->work_tree;
     opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
