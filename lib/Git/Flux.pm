@@ -65,6 +65,31 @@ C<gitflux> is the love child or Perl and gitflow.
 
 =head1 SUBROUTINES/METHODS
 
+=head2 new
+
+Create a new object of Git::Flux.
+
+=head3 dir
+
+The directory which the Git::Flux instance will be working on.
+
+You can also set this using the C<GITFLUX_DIR> environment variable.
+
+=head3 repo
+
+Internal L<Git::Repository> object that Git::Flux uses to do all the C<Git>
+work.
+
+You can construct your own and provide it on initialize.
+
+=head2 run
+
+=head2 create_repo
+
+A small helper function to create a repository. The directory is taken from
+the C<dir> hash key in the object. If one does not exist (that means it was
+not provided in C<new>), it uses the current directory.
+
 =head1 AUTHORS
 
 Sawyer X, C<< <xsawyerx at cpan.org> >>
