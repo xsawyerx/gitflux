@@ -69,13 +69,13 @@ use TestFunctions;
 
     my ( $flux, $repo ) = default_env();
     my @rounds = (
-        qr/^Branch name for production releases: \[master\]/,       'master/',
-        qr/^Branch name for "next release" development: \[devel\]/, 'devel/',
-        qr/^Feature branches? \[feature\/\]/,                       'feature/',
-        qr/^Release branches? \[release\/\]/,                       'release/',
-        qr/^Hotfix branches? \[hotfix\/\]/,                         'hotfix/',
-        qr/^Support branches? \[support\/\]/,                       'support/',
-        qr/^Version tag prefix? \[\]/,                              'v',
+        qr/^Branch name for production releases: \[master\]/,
+        qr/^Branch name for "next release" development: \[devel\]/,
+        qr/^Feature branches\? \[feature\/\]/,
+        qr/^Release branches\? \[release\/\]/,
+        qr/^Hotfix branches\? \[hotfix\/\]/,
+        qr/^Support branches\? \[support\/\]/,
+        qr/^Versiontag prefix\? \[\]/,
     );
 
     mock 'Term::ReadLine::Stub'
@@ -84,9 +84,7 @@ use TestFunctions;
             my $round = shift @rounds;
             isa_ok( $_[0], 'Term::ReadLine::Stub' );
             like( $_[1], $round, 'Correct question' );
-
-            # reply
-            return shift @rounds;
+            return;
         };
 
     is(
@@ -141,6 +139,4 @@ use TestFunctions;
 
     cmp_ok( $cmd->exit, '==', 0, 'versiontag created' );
 }
-
-# - renaming the branches before creation         = ok
 
