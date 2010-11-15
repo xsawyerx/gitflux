@@ -8,7 +8,7 @@ use Git::Flux;
 
 use File::Spec;
 use File::Temp 'tempdir';
-use Test::More tests => 26;
+use Test::More tests => 40;
 use Test::Fatal;
 use Test::TinyMocker;
 use TestFunctions;
