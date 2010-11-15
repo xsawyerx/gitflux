@@ -214,9 +214,7 @@ sub init {
         if ( $cmd->exit == 1 or $force ) {
             my $default_suggestion = $repo->run(
                 config => '--get', "gitflux.prefix.$type"
-            ) || $type;
-
-            $default_suggestion .= '/';
+            ) || "$type/";
 
             # version tag has its own default suggestion
             $type eq 'versiontag' and $default_suggestion = 'v';
