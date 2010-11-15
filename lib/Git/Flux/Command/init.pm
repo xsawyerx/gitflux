@@ -223,7 +223,7 @@ sub init {
                          $default_suggestion;
 
             # - means empty prefix, otherwise take the answer (or default)
-            $answer eq '-' or $prefix = $answer;
+            defined $answer && $answer eq '-' or $prefix = $answer;
 
             $repo->run( config => "gitflux.prefix.$type", $prefix );
         }
