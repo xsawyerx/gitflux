@@ -12,6 +12,8 @@ sub init {
     my $dir   = $self->{'dir'};
     my $term = Term::ReadLine->new('Gitflux');
 
+    $term->ornaments(0);
+
     my ( $failed, $repo, $master_branch, $devel_branch, $prefix );
 
     if ($force) {
