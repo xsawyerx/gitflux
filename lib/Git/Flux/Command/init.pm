@@ -213,7 +213,7 @@ sub init {
                 config => '--get', "gitflux.prefix.$type"
             ) || $type;
 
-            my $prompt = lc $type . " branches? [$default_suggestion] ";
+            my $prompt = ucfirst $type . " branches? [$default_suggestion] ";
             my $answer = $self->is_interactive    ?
                          $term->readline($prompt) :
                          $default_suggestion;
