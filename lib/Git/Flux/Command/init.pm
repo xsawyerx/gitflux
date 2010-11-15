@@ -213,7 +213,11 @@ sub init {
                 config => '--get', "gitflux.prefix.$type"
             ) || $type;
 
-            my $prompt = ucfirst $type . " branches? [$default_suggestion] ";
+            # version tag has its own prompt text
+            my $prompt = $type eq 'versiontag'                        ?
+                         "Version tag prefix? [$default_suggestion] " :
+                         ucfirst $type . " branches? [$default_suggestion] ";
+
             my $answer = $self->is_interactive    ?
                          $term->readline($prompt) :
                          $default_suggestion;

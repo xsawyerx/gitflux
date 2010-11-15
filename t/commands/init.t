@@ -75,7 +75,7 @@ use TestFunctions;
         qr/^Release branches\? \[release\/\]/,
         qr/^Hotfix branches\? \[hotfix\/\]/,
         qr/^Support branches\? \[support\/\]/,
-        qr/^Versiontag prefix\? \[\]/,
+        qr/^Version tag prefix\? \[v\]/,
     );
 
     mock 'Term::ReadLine::Stub'
