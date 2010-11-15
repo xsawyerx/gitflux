@@ -89,8 +89,9 @@ use TestFunctions;
             return shift @rounds;
         };
 
-    ok(
-        ! exception { $flux->run( 'init' => '-f' ) },
+    is(
+        exception { $flux->run( 'init' => '-f' ) },
+        undef,
         'reinit with force succeeds',
     );
 
