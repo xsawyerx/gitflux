@@ -151,6 +151,79 @@ sub init {
 
         $repo->run( config => 'gitflux.branch.devel', $devel_branch );
     }
+
+    # Creation of HEAD
+    # ----------------
+    # We create a HEAD now, if it does not exist yet (in a fresh repo). We need
+    # it to be able to create new branches.
+    my $created_gitflux_branch;
+    my $cmd = $repo->command( 'rev-parse' => qw/ --quiet --verify HEAD / );
+    $cmd->close;
+    if ( ! $cmd->exit ) {
+        $repo->run( 'symbolic-ref' => 'HEAD', "refs/heads/$master_branch" );
+        $repo->run( commit => qw/--allow-empty --quiet -m/, 'Initial commit' );
+        $created_gitflux_branch = 1;
+    }
+
+    # Creation of master
+    # ------------------
+    # At this point, there always is a master branch: either it existed already
+    # (and was picked interactively as the production branch) or it has just
+    # been created in a fresh repo
+
+    # Creation of devel
+    # -------------------
+    # The devel branch possibly does not exist yet. This is the case when,
+    # in a git init'ed repo with one or more commits, master was picked as the
+    # default production branch and devel was "created".  We should create
+    # the devel branch now in that case (we base it on master, of course)
+    if ( ! $self->git_local_branch_exists($devel_branch) ) {
+        $repo->run( branch => '--no-track', $devel_branch, $master_branch );
+        $created_gitflux_branch = 1;
+    }
+
+    # assert gitflux initialization
+    $self->gitflux_is_initialized;
+
+    # switch to devel if newly created
+    if ($created_gitflux_branch) {
+        $repo->run( checkout => '-q', $devel_branch );
+    }
+
+    # finally, ask the user for naming conventions (branch and tag prefixes)
+    if (
+        $force ||
+        ! $repo->run( config => qw/--get gitflux.prefix.feature/    ) ||
+        ! $repo->run( config => qw/--get gitflux.prefix.release/    ) ||
+        ! $repo->run( config => qw/--get gitflux.prefix.hotfix/     ) ||
+        ! $repo->run( config => qw/--get gitflux.prefix.support/    ) ||
+        ! $repo->run( config => qw/--get gitflux.prefix.versiontag/ )
+    ) {
+        print "\nHow to name your supporting branch prefixes?\n";
+    }
+
+    foreach my $type ( qw/ feature release hotfix support versiontag / ) {
+        my $cmd = $repo->command( config => '--get', "gitflux.prefix.$type" );
+        $cmd->close;
+
+        my $prefix = '';
+
+        if ( ! $cmd->exit || $force ) {
+            my $default_suggestion = $repo->run(
+                config => '--get', "gitflux.prefix.$type"
+            ) || $type;
+
+            my $prompt = lc $type . " branches? [$default_suggestion] ";
+            my $answer = $self->is_interactive    ?
+                         $term->readline($prompt) :
+                         $default_suggestion;
+
+            # - means empty prefix, otherwise take the answer (or default)
+            $answer eq '-' or $prefix = $answer;
+
+            $repo->run( config => "gitflux.prefix.$type", $prefix );
+        }
+    }
 }
 
 1;
