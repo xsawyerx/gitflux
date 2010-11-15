@@ -230,8 +230,9 @@ sub init {
                          $term->readline($prompt) :
                          $default_suggestion;
 
-            chomp $answer;
-            $answer ne '' or $answer = $default_suggestion;
+            defined $answer and chomp $answer;
+            ( defined $answer and $answer ne '' )
+                or $answer = $default_suggestion;
 
             # - means empty prefix, otherwise take the answer (or default)
             ( defined $answer and $answer eq '-' )
