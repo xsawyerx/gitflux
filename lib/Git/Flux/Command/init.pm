@@ -160,7 +160,7 @@ sub init {
     my $cmd = $repo->command( 'rev-parse' => qw/ --quiet --verify HEAD / );
     $cmd->close;
 
-    if ( $cmd->exit != 0 ) {
+    if ( $cmd->exit == 1 ) {
         $repo->run( 'symbolic-ref' => 'HEAD', "refs/heads/$master_branch" );
         $repo->run( commit => qw/--allow-empty --quiet -m/, 'Initial commit' );
         $created_gitflux_branch = 1;
