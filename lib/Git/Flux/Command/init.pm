@@ -209,10 +209,13 @@ sub init {
 
         my $prefix = '';
 
-        if ( ! $cmd->exit || $force ) {
+        if ( $cmd->exit == 1 or $force ) {
             my $default_suggestion = $repo->run(
                 config => '--get', "gitflux.prefix.$type"
             ) || $type;
+
+            # version tag has its own default suggestion
+            $type eq 'versiontag' and $default_suggestion = 'v';
 
             # version tag has its own prompt text
             my $prompt = $type eq 'versiontag'                        ?
