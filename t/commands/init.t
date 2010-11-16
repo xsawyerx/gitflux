@@ -8,45 +8,16 @@ use Git::Flux;
 
 use File::Spec;
 use File::Temp 'tempdir';
-use Test::More tests => 40;
+use Test::More tests => 12;
 use Test::Fatal;
 use Test::TinyMocker;
 use TestFunctions;
 
-sub find_readline_backend {
-    foreach my $type ( qw/Gnu Perl Stub TermCap Tk/ ) {
-        my $fulltype = "Term::ReadLine::$type";
-
-        if ( defined &$fulltype ) {
-            return $fulltype;
-        }
-    }
-
-    return 'Term::ReadLine::Gnu';
+{
+    # remove interactive mode
+    no warnings qw/redefine once/;
+    *Git::Flux::is_interactive = sub {0};
 }
-
-my $roundc = 0;
-my @rounds = (
-    qr/^Branch name for production releases: \[master\]/,
-    qr/^Branch name for "next release" development: \[devel\]/,
-    qr/^Feature branches\? \[feature\/\]/,
-    qr/^Release branches\? \[release\/\]/,
-    qr/^Hotfix branches\? \[hotfix\/\]/,
-    qr/^Support branches\? \[support\/\]/,
-    qr/^Version tag prefix\? \[v\]/,
-);
-
-# rotate over the possible questions
-mock find_readline_backend()
-    => method 'readline'
-    => should {
-        my $round = $rounds[$roundc++];
-
-        isa_ok( $_[0], 'Term::ReadLine::Stub' );
-        like( $_[1], $round, 'Correct question' );
-
-        return;
-    };
 
 {
     # TODO: the headless part... anyone?
@@ -70,8 +41,6 @@ mock find_readline_backend()
         'require clean working directory (unstaged)',
     );
 
-    $roundc = 0;
-
     $repo->run( add => $file );
 
     is(
@@ -79,8 +48,6 @@ mock find_readline_backend()
         "fatal: Index contains uncommitted changes. Aborting.\n",
         'require clean working directory (uncommited)',
     );
-
-    $roundc = 0;
 }
 
 {
@@ -98,8 +65,6 @@ mock find_readline_backend()
             "To force reinitialization, use: git flux init -f\n",
         'reinit without force fails',
     );
-
-    $roundc = 0;
 }
 
 {
@@ -118,8 +83,6 @@ mock find_readline_backend()
         undef,
         'reinit with force succeeds',
     );
-
-    $roundc = 0;
 
     my $dir = $repo->work_tree;
     opendir my $dh, $dir    or die "Can't open dir '$dir': $!\n";
