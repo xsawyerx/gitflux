@@ -51,7 +51,35 @@ _END_REPORT
 
 }
 
+sub feature_list {
+    my $self              = shift;
+    my $repo              = $self->{repo};
+    my $prefix            = $self->prefix();
+    my @features_branches = grep { /^$prefix$/ } $self->git_local_branches();
+
+    if (!scalar @features_branches) {
+        print << "__END_REPORT";
+No feature branches exists.
+
+You can start a new feature branch:
+
+    git-flux feature start <name> [<base>]
+
+__END_REPORT
+    }
+
+    
+    
+}
+
 sub _feature_end {1}
+
+sub prefix {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+    return $repo->command('config' => '--get' => 'gitflow.prefix.feature');
+}
+
 
 1;
 
