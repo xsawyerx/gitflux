@@ -10,7 +10,7 @@ sub init {
     my $self  = shift;
     my $force = shift;
     my $dir   = $self->{'dir'};
-    my $term = Term::ReadLine->new('Gitflux');
+    my $term  = Term::ReadLine->new('Gitflux');
 
     $term->ornaments(0);
 

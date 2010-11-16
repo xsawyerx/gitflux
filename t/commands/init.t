@@ -13,6 +13,18 @@ use Test::Fatal;
 use Test::TinyMocker;
 use TestFunctions;
 
+sub find_readline_backend {
+    foreach my $type ( qw/Gnu Perl Stub TermCap Tk/ ) {
+        my $fulltype = "Term::ReadLine::$type";
+
+        if ( defined &$fulltype ) {
+            return $fulltype;
+        }
+    }
+
+    return 'Term::ReadLine::Gnu';
+}
+
 my $roundc = 0;
 my @rounds = (
     qr/^Branch name for production releases: \[master\]/,
@@ -25,7 +37,7 @@ my @rounds = (
 );
 
 # rotate over the possible questions
-mock 'Term::ReadLine::Stub'
+mock find_readline_backend()
     => method 'readline'
     => should {
         my $round = $rounds[$roundc++];
