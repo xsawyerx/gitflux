@@ -24,10 +24,15 @@ my $builder = Module::Build->new(
         'List::MoreUtils' => 0,
     },
 
-    add_to_cleanup     => [ 'Git-Flux-*' ],
-    create_makefile_pl => 'traditional',
-    create_readme      => 1,
-    create_license     => 1,
+    add_to_cleanup       => [ 'Git-Flux-*' ],
+    create_makefile_pl   => 'traditional',
+    create_readme        => 1,
+    create_license       => 1,
+    recursive_test_files => 1,
+
+    meta_merge => {
+        repository  => 'http://github.com/xsawyerx/gitflux/'
+    },
 );
 
 $builder->create_build_script();
