@@ -12,7 +12,6 @@ MANIFEST.SKIP
 META.yml
 README
 t/00-load.t
-t/boilerplate.t
 t/commands/feature/help.t
 t/commands/feature/start.t
 t/commands/init.t
