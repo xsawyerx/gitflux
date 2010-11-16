@@ -6,6 +6,7 @@ build_requires:
   File::Temp: 0
   Test::Fatal: 0
   Test::More: 0
+  Test::TinyMocker: 0
 configure_requires:
   Module::Build: 0.36
 generated_by: 'Module::Build version 0.3607'
@@ -17,7 +18,7 @@ name: Git-Flux
 provides:
   Git::Flux:
     file: lib/Git/Flux.pm
-    version: 0.01
+    version: 0.0_01
   Git::Flux::Command::feature:
     file: lib/Git/Flux/Command/feature.pm
   Git::Flux::Command::help:
@@ -28,10 +29,11 @@ provides:
     file: lib/Git/Flux/Utils.pm
 requires:
   Git::Repository: 0
-  Term::Readline: 0
+  List::MoreUtils: 0
+  Term::ReadLine: 0
   Try::Tiny: 0
   mixin: 0
   perl: 5.006
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.0_01

@@ -8,9 +8,11 @@ WriteMakefile
           'PREREQ_PM' => {
                            'File::Temp' => 0,
                            'Git::Repository' => 0,
-                           'Term::Readline' => 0,
+                           'List::MoreUtils' => 0,
+                           'Term::ReadLine' => 0,
                            'Test::Fatal' => 0,
                            'Test::More' => 0,
+                           'Test::TinyMocker' => 0,
                            'Try::Tiny' => 0,
                            'mixin' => 0
                          },

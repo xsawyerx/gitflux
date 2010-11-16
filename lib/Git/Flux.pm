@@ -12,7 +12,7 @@ use mixin 'Git::Flux::Utils';
 use mixin 'Git::Flux::Command::init';
 use mixin 'Git::Flux::Command::help';
 
-our $VERSION = '0.1';
+our $VERSION = '0.0_01';
 
 sub new {
     my $class = shift;
