@@ -7,7 +7,7 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
-use Test::More tests => 5;
+use Test::More skip_all => 'support not implemented yet'; # 5;
 use Test::Fatal;
 use TestFunctions;
 

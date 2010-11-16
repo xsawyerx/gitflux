@@ -7,7 +7,7 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
-use Test::More tests => 6;
+use Test::More skip_all => 'feature not implemented yet'; # 6
 use Test::Fatal;
 use TestFunctions;
 use Test::TinyMocker;

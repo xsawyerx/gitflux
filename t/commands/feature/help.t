@@ -7,7 +7,7 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
-use Test::More tests => 1;
+use Test::More skip_all => 'feature not implemented yet'; # 1
 use TestFunctions;
 
 my ( $flux, $repo ) = default_env();
