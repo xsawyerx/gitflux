@@ -357,15 +357,153 @@ This provides a few command utilities that is shared between Gitflux commands.
 
 =head1 SUBROUTINES/METHODS
 
+=head2 git_local_branches
+
+Return list of all local git branches.
+
+=head2 git_remote_branches
+
+Return list of all remote git branches.
+
+=head2 git_all_branches
+
+Return list of all git branches, both local and remote.
+
+=head2 git_all_tags
+
+Return list of all git tags.
+
+=head2 git_current_branch
+
+Return the current git branch.
+
+=head2 git_is_clean_working_tree
+
+Return a numbered code representing the cleanliness of the Git repository.
+
+=over 4
+
+=item 0
+
+The repo is clean.
+
+=item 1
+
+Unclean working directory. This means stuff is waiting to be added to
+the staging area / index.
+
+=item 2
+
+Unclean index. This means stuff needs to be committed.
+
+=back
+
+=head2 git_repo_is_headless
+
+Returns a boolean on whether the Git repo is headless or not.
+
+=head2 git_local_branch_exists($name)
+
+Returns a boolean on whether a certain local branch exists.
+
+=head2 git_branch_exists($name)
+
+Returns a boolean on whether a Git branch exists.
+
+=head2 git_tag_exists($name)
+
+Returns a boolean on whether a Git tag exists.
+
+=head2 git_compare_branches($branch1, $branch2)
+
+Compared two git branches and checks whether their I<origin> coutnerparts have
+diverged and need merging first. Returns a numbered code:
+
+=over 4
+
+=item 0
+
+Branch heads point to the same commit
+
+=item 1
+
+First given branch needs fast-forwarding
+
+=item 2
+
+Second given branch needs fast-forwarding
+
+=item 3
+
+Branch needs a real merge
+
+=item 4
+
+There is no merge base, i.e. the branches have no common ancestors
+
+=back
+
+=head2 git_is_branch_merged_into($branch1, $branch2)
+
+Checks whether branch 1 is succesfully merged into 2.
+
+=head2 gitflux_has_master_configured
+
+Return a boolean on whether the gitflux master is configured.
+
+=head2 gitflux_has_devel_configured
+
+Returns a boolean on whether the gitflux devel is configured.
+
+=head2 gitflux_has_prefixes_configured
+
+Returns a boolean on whether the gitflux prefixes are configured.
+
+=head2 gitflux_is_initialized
+
+Returns a boolean on whether gitflux itself is configured.
+
+=head2 gitflux_load_settings
+
+Loads all the gitflux settings.
+
+=head2 gitflux_resolve_nameprefix
+
+Returns a boolean on whether the gitflux devel is configured.
+
+=head2 require_git_repo
+
+Asserts a certain directory is a git repository.
+
+=head2 require_gitflux_initialized
+
+Asserts gitflux was already initialized.
+
+=head2 require_clean_working_tree
+
+Asserts the working tree is clean.
+
+=head2 require_local_branch($branch)
+
+Asserts there's a local branch with a given name.
+
+=head2 require_remote_branch($branch)
+
+Asserts there's a local branch with a given name.
+
+=head2 require_branch($branch)
+
+Asserts a certain branch exists.
+
 =head2 require_branch_absent($name)
 
 Returns a boolean on whether a branch exists.
 
-=head2 git_branch_exists($name)
+=head2 require_tag_absent($branch)
 
-Asserts that a branch exists.
+Asserts that a certain tag is absent.
 
-=head2 require_branches_equal( $branch1, $branch2 )
+=head2 require_branches_equal($branch1, $branch2)
 
 Asserts that two branches are equal.
 
