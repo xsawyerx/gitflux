@@ -18,7 +18,7 @@ name: Git-Flux
 provides:
   Git::Flux:
     file: lib/Git/Flux.pm
-    version: 0.0_01
+    version: 0.0_02
   Git::Flux::Command::feature:
     file: lib/Git/Flux/Command/feature.pm
   Git::Flux::Command::help:
@@ -27,6 +27,7 @@ provides:
     file: lib/Git/Flux/Command/init.pm
   Git::Flux::Utils:
     file: lib/Git/Flux/Utils.pm
+repository: http://github.com/xsawyerx/gitflux/
 requires:
   Git::Repository: 0
   List::MoreUtils: 0
@@ -36,4 +37,4 @@ requires:
   perl: 5.006
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.0_01
+version: 0.0_02
