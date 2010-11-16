@@ -20,6 +20,9 @@ WriteMakefile
           'EXE_FILES' => [
                            'bin/git-flux'
                          ],
-          'PL_FILES' => {}
+          'PL_FILES' => {},
+          'test' => {
+                      'TESTS' => 't/*.t t/lib/*.t t/commands/*.t t/commands/feature/*.t t/commands/support/*.t'
+                    }
         )
 ;
