@@ -1,0 +1,13 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Git::Flux;
+
+my $gitflux = Git::Flux->new(
+    dir => $ENV{'GITFLUX_DIR'} || '.'
+);
+
+$gitflux->run(@ARGV);
+
+

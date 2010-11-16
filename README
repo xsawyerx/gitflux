@@ -1,4 +1,50 @@
-Development is being done in the 'devel' branch, feel free to check it out if
-you're interested.
+NAME
+    Git::Flux - A Perl port of gitflow
 
-There's not much to see here till we get a first release out.
+DESCRIPTION
+    We like gitflow and we like Perl and when we heard gitflow needs to be
+    rewritten in order to be more portable, we decided to get in gear.
+
+    "gitflux" is the love child or Perl and gitflow.
+
+SUBROUTINES/METHODS
+  new
+    Create a new object of Git::Flux.
+
+   dir
+    The directory which the Git::Flux instance will be working on.
+
+    You can also set this using the "GITFLUX_DIR" environment variable.
+
+   repo
+    Internal Git::Repository object that Git::Flux uses to do all the "Git"
+    work.
+
+    You can construct your own and provide it on initialize.
+
+  run
+  create_repo
+    A small helper function to create a repository. The directory is taken
+    from the "dir" hash key in the object. If one does not exist (that means
+    it was not provided in "new"), it uses the current directory.
+
+AUTHORS
+    Sawyer X, "<xsawyerx at cpan.org>"
+
+    Philippe Bruhat (BooK), "<book at cpan.org>"
+
+BUGS
+    Please use the Github Issues tracker.
+
+ACKNOWLEDGEMENTS
+    c<gitflow>
+
+LICENSE AND COPYRIGHT
+    Copyright 2010 Sawyer X.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of either: the GNU General Public License as published
+    by the Free Software Foundation; or the Artistic License.
+
+    See http://dev.perl.org/licenses/ for more information.
+
