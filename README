@@ -8,6 +8,26 @@ DESCRIPTION
     "gitflux" is the love child or Perl and gitflow.
 
 SUBROUTINES/METHODS
+  new
+    Create a new object of Git::Flux.
+
+   dir
+    The directory which the Git::Flux instance will be working on.
+
+    You can also set this using the "GITFLUX_DIR" environment variable.
+
+   repo
+    Internal Git::Repository object that Git::Flux uses to do all the "Git"
+    work.
+
+    You can construct your own and provide it on initialize.
+
+  run
+  create_repo
+    A small helper function to create a repository. The directory is taken
+    from the "dir" hash key in the object. If one does not exist (that means
+    it was not provided in "new"), it uses the current directory.
+
 AUTHORS
     Sawyer X, "<xsawyerx at cpan.org>"
 
