@@ -9,9 +9,10 @@ my $builder = Module::Build->new(
     dist_author         => q{Sawyer X <xsawyerx@cpan.org>},
     dist_version_from   => 'lib/Git/Flux.pm',
     build_requires => {
-        'Test::More'  => 0,
-        'File::Temp'  => 0,
-        'Test::Fatal' => 0,
+        'Test::More'       => 0,
+        'File::Temp'       => 0,
+        'Test::Fatal'      => 0,
+        'Test::TinyMocker' => 0,
     },
 
     requires => {
@@ -19,7 +20,8 @@ my $builder = Module::Build->new(
         'Git::Repository' => 0,
         'mixin'           => 0,
         'Try::Tiny'       => 0,
-        'Term::Readline'  => 0,
+        'Term::ReadLine'  => 0,
+        'List::MoreUtils' => 0,
     },
 
     add_to_cleanup     => [ 'Git-Flux-*' ],
