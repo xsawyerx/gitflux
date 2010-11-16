@@ -51,8 +51,6 @@ _END_REPORT
 
 }
 
-sub _feature_end {1}
-
 1;
 
 __END__
@@ -70,6 +68,10 @@ This provides feature branches functionality to Gitflux.
 =head2 feature
 
 Features can be started, finished, listed, etc.
+
+=head2 feature_start
+
+The method that runs on C<git flux feature start>.
 
 =head1 AUTHORS
 
