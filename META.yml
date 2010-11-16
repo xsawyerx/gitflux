@@ -1,0 +1,37 @@
+---
+abstract: 'A Perl port of gitflow'
+author:
+  - 'Sawyer X <xsawyerx@cpan.org>'
+build_requires:
+  File::Temp: 0
+  Test::Fatal: 0
+  Test::More: 0
+configure_requires:
+  Module::Build: 0.36
+generated_by: 'Module::Build version 0.3607'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Git-Flux
+provides:
+  Git::Flux:
+    file: lib/Git/Flux.pm
+    version: 0.01
+  Git::Flux::Command::feature:
+    file: lib/Git/Flux/Command/feature.pm
+  Git::Flux::Command::help:
+    file: lib/Git/Flux/Command/help.pm
+  Git::Flux::Command::init:
+    file: lib/Git/Flux/Command/init.pm
+  Git::Flux::Utils:
+    file: lib/Git/Flux/Utils.pm
+requires:
+  Git::Repository: 0
+  Term::Readline: 0
+  Try::Tiny: 0
+  mixin: 0
+  perl: 5.006
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

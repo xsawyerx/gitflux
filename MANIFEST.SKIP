@@ -1,0 +1,6 @@
+^MYMETA.yml$
+_build
+.git
+MANIFEST.bak
+^Build$
+blib
