@@ -11,6 +11,7 @@ my $builder = Module::Build->new(
     build_requires => {
         'Test::More'       => 0,
         'File::Temp'       => 0,
+        'File::Slurp'      => 0,
         'Test::Fatal'      => 0,
         'Test::TinyMocker' => 0,
     },
