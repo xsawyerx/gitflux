@@ -6,6 +6,7 @@ WriteMakefile
           'NAME' => 'Git::Flux',
           'VERSION_FROM' => 'lib/Git/Flux.pm',
           'PREREQ_PM' => {
+                           'File::Slurp' => 0,
                            'File::Temp' => 0,
                            'Git::Repository' => 0,
                            'List::MoreUtils' => 0,
