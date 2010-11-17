@@ -3,6 +3,7 @@ abstract: 'A Perl port of gitflow'
 author:
   - 'Sawyer X <xsawyerx@cpan.org>'
 build_requires:
+  File::Slurp: 0
   File::Temp: 0
   Test::Fatal: 0
   Test::More: 0
@@ -18,7 +19,7 @@ name: Git-Flux
 provides:
   Git::Flux:
     file: lib/Git/Flux.pm
-    version: 0.0_02
+    version: 0.0_03
   Git::Flux::Command::feature:
     file: lib/Git/Flux/Command/feature.pm
   Git::Flux::Command::help:
@@ -37,4 +38,4 @@ requires:
   perl: 5.006
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.0_02
+version: 0.0_03
