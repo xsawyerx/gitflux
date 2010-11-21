@@ -4,6 +4,14 @@ use strict;
 use warnings;
 use mixin::with 'Git::Flux';
 
+# XXX missing
+# - finish
+# - publish
+# - diff
+# - rebase
+# - checkout
+# - pull
+
 sub feature {
     my $self   = shift;
     my $cmd    = shift;
@@ -19,6 +27,8 @@ sub feature_start {
     my $repo                = $self->{'repo'};
 
     $br_name or die "Missing argument <name>\n";
+    my $prefix = $self->prefix();
+    $br_name = $prefix . $br_name;
 
     $self->require_branch_absent($br_name);
 
@@ -55,7 +65,7 @@ sub feature_list {
     my $self              = shift;
     my $repo              = $self->{repo};
     my $prefix            = $self->prefix();
-    my @features_branches = grep { /^$prefix$/ } $self->git_local_branches();
+    my @features_branches = grep { /^$prefix/ } $self->git_local_branches();
 
     if (!scalar @features_branches) {
         print << "__END_REPORT";
@@ -68,8 +78,46 @@ You can start a new feature branch:
 __END_REPORT
     }
 
+    # XXX move somewhere else
+    $self->gitflux_load_settings();
     
-    
+    my $current_branch = $self->git_current_branch();
+    my $devel_branch = $self->{'devel_branch'};
+
+    foreach my $branch (@features_branches) {
+        my $base = $repo->run('merge-base' => $branch, $devel_branch);
+        my $develop_sha = $repo->run('rev-parse' => $devel_branch);
+        my $branch_sha = $repo->run('rev-parse' => $branch);
+        if ($branch eq $current_branch) {
+            print '* ';
+        }else{
+            print '  ';
+        }
+        print "$branch\n";
+    }
+}
+
+sub feature_track {
+    my ($self, $br_name) = @_;
+    my $repo = $self->{'repo'};
+
+    # XXX move somewhere else
+    $self->gitflux_load_settings();
+    my $origin = $self->{'origin_branch'};
+
+    $br_name or die "Missing argument <name>\n";
+    $self->require_clean_working_tree();
+    $self->require_branch_absent($br_name);
+    $repo->run('fetch' => '-q', $origin);
+
+    $repo->run('checkout' => '-b', $br_name, $origin.'/'.$br_name);
+
+    print << "_END_REPORT";
+Summary of actions:
+- A new remote tracking branch '$br_name' was created
+- You are now on branch '$br_name'
+
+_END_REPORT
 }
 
 sub _feature_end {1}
@@ -77,7 +125,7 @@ sub _feature_end {1}
 sub prefix {
     my $self = shift;
     my $repo = $self->{'repo'};
-    return $repo->command('config' => '--get' => 'gitflow.prefix.feature');
+    return $repo->run('config' => '--get' => 'gitflux.prefix.feature');
 }
 
 
