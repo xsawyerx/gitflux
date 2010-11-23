@@ -15,5 +15,10 @@ use_ok($_)
 
 diag( "Testing Git::Flux $Git::Flux::VERSION, Perl $], $^X" );
 diag( "Testing with Git::Repository $Git::Repository::VERSION" );
-diag( "Testing with Git " . Git::Repository->version );
+
+if ( Git::Repository::Command::_is_git('git') ) {
+    diag( "Testing with Git " . Git::Repository->version );
+} else {
+    diag("Testing without Git installed");
+}
 
