@@ -10,7 +10,7 @@ use mixin::with 'Git::Flux';
 # - diff
 # - rebase
 # - checkout
-# - pull
+# - pull => need tests
 
 sub feature {
     my $self   = shift;
@@ -118,6 +118,61 @@ Summary of actions:
 - You are now on branch '$br_name'
 
 _END_REPORT
+}
+
+sub feature_pull {
+    my ( $self, $remote, $name ) = @_;
+
+    if ( !$remote ) {
+        Carp::croak("Name a remote explicitly");
+    }
+
+    my $current_branch = $self->git_current_branch();
+
+    my $branch;
+
+    if ( !$name ) {
+
+        # TODO test if current HEAD is feature branch
+        $branch = $self->prefix . $current_branch;
+    }
+    else {
+        $branch = $self->prefix . $name;
+    }
+
+    # To avoid accidentally merging different feature branches into each
+    # other, die if the current feature branch differs from the requested
+    # $NAME argument.
+    # XXX test with avoid_accidental...
+    $self->_avoid_accidental_cross_branch_action();
+    $self->require_clean_working_tree();
+
+    my $repo = $self->{repo};
+    if ( $self->git_branch_exists($branch) ) {
+
+        $self->_avoid_accidental_cross_branch_action();
+        $repo->run( 'pull' => qw/-q $remote $branch/ )
+          || die "Failed to pull from remote '$remote'";
+        print "Pulled $remote's changes into $branch\n";
+        $repo->run( 'fetch' => "-q", $remote, $branch ) || die "Fetch failed";
+        $repo->run( 'branch' => qw/--no-track/, $branch, "FETCH_HEAD" )
+          || die "Branch failed";
+        $repo->run( 'checkout' => "-q", $branch )
+          || die "Checking out new local branch failed";
+        print "Created local branch $branch based on $remote's $branch\n";
+    }
+    else {
+        $repo->run( 'fetch', => "-q", $remote, $branch ) || die "Fetch failed";
+        $repo->run( 'branch' => qw/--no-track/, $branch, "FETCH_HEAD" )
+          || die "Branch failed";
+        $repo->run( 'checkout', '-q', $branch )
+          || die "Checking out new local branch failed";
+        print "Created local branch $branch based on $remote's branch\n";
+    }
+}
+
+sub _avoid_accidental_cross_branch_action {
+    my $self = shift;
 }
 
 sub _feature_end {1}
