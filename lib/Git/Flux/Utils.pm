@@ -344,6 +344,12 @@ sub is_interactive {
     return -t STDIN && -t STDOUT;
 }
 
+sub feature_prefix {
+    my $self = shift;
+    my $repo = $self->{'repo'};
+    return $repo->run( 'config' => '--get' => 'gitflux.prefix.feature' );
+}
+
 1;
 
 __END__
