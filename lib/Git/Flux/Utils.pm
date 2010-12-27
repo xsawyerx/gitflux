@@ -350,6 +350,12 @@ sub feature_prefix {
     return $repo->run( 'config' => '--get' => 'gitflux.prefix.feature' );
 }
 
+sub expand_prefix {
+    my ( $self, $prefix, $name ) = @_;
+    return $name if $name =~ /^$prefix/;
+    return $prefix . $name;
+}
+
 1;
 
 __END__
