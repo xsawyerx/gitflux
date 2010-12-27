@@ -14,10 +14,16 @@ use mixin::with 'Git::Flux';
 # - checkout => need tests
 # - pull => need tests
 
+my $aliases = {
+    co => 'checkout',
+};
+
 sub feature {
     my $self = shift;
     my $cmd = shift || 'list';
 
+    $cmd = defined $aliases->{$cmd} ? $aliases->{$cmd} : $cmd;
+    
     my $method = "feature_$cmd";
 
     $self->gitflux_load_settings();
@@ -28,17 +34,15 @@ sub feature {
 
 sub feature_start {
     my $self = shift;
-    my $name = shift;
+    my $name = shift; 
     my $base = shift || $self->{'devel_branch'};
     
     my $repo = $self->{'repo'};
 
     $name or Carp::croak "Missing argument <name>";
 
-    my $prefix  = $self->feature_prefix();
-    my $br_name = $prefix . $name;
-
-    $self->require_branch_absent($br_name);
+    $name = $self->expand_nameprefix($name);
+    $self->require_branch_absent($name);
 
     # TODO: handle fetch flag handling
 
@@ -51,18 +55,18 @@ sub feature_start {
     }
 
     # create branch
-    my $result = $repo->command( checkout => '-b' => $br_name => $base );
+    my $result = $repo->command( checkout => '-b' => $name => $base );
     $result->exit == 0
-      or Carp::croak "Could not create feature branch '$br_name'";
+      or Carp::croak "Could not create feature branch '$name'";
 
     print << "_END_REPORT";
 Summary of actions:
-- A new branch '$br_name' was created, based on '$base'
-- You are now on branch '$br_name'
+- A new branch '$name' was created, based on '$base'
+- You are now on branch '$name'
 
 Now, start committing on your feature. When done, use:
 
-     git flow feature finish $br_name
+     git flow feature finish $name
 _END_REPORT
 
 }
@@ -107,6 +111,8 @@ sub feature_track {
     my ($self, $name) = @_;
     $name or Carp::croak "Missing argument <name>";
 
+    $name = $self->expand_nameprefix($name);
+    
     $self->require_clean_working_tree();
     $self->require_branch_absent($name);
 
@@ -130,7 +136,7 @@ _END_REPORT
 }
 
 sub feature_pull {
-    my $self = shift;
+    my $self   = shift;
     my $remote = shift;
 
     if ( !$remote ) {
@@ -138,149 +144,166 @@ sub feature_pull {
     }
 
     $current_branch = $self->git_current_branch();
+    my $name = @_ == 1 ? $self->expand_nameprefix(shift) : $current_branch;
+
     my $prefix = $self->feature_prefix();
 
-    my $name = shift || $current_branch;
+    # To avoid accidentally merging different feature branches into
+    # each other, die if the current feature branch differs from the
+    # requested $name argument.
+    if ( $current_branch =~ /^$prefix/ ) {
 
-    # To avoid accidentally merging different feature branches into each
-    # other, die if the current feature branch differs from the requested
-    # $NAME argument.
-    # XXX test with avoid_accidental...
-    if ($current_branch =~ /^$prefix/) {
-        $self->_avoid_accidental_cross_branch_action();        
+        # we are on a local feature branch already, so $BRANCH must be
+        # equal to the current branch
+        $self->_avoid_accidental_cross_branch_action($name);
     }
 
     $self->require_clean_working_tree();
 
     my $repo = $self->{repo};
-    if ( $self->git_branch_exists($branch) ) {
 
-        $self->_avoid_accidental_cross_branch_action();
-        $repo->run( 'pull' => qw/-q $remote $branch/ )
+    if ( $self->git_branch_exists($name) ) {
+        $self->_avoid_accidental_cross_branch_action($name) || Carp::croak("die");
+
+        my $res = $repo->run( 'pull' => '-q' => $remote => $name );
+        $res->exit == 0
           || die "Failed to pull from remote '$remote'";
-        print "Pulled $remote's changes into $branch\n";
-        $repo->run( 'fetch' => "-q", $remote, $branch ) || die "Fetch failed";
-        $repo->run( 'branch' => qw/--no-track/, $branch, "FETCH_HEAD" )
-          || die "Branch failed";
-        $repo->run( 'checkout' => "-q", $branch )
+        print "Pulled $remote's changes into $name\n";
+
+        $res = $repo->run( 'fetch' => "-q" => $remote => $name );
+        $res->exit == 0 || die "Fetch failed";
+
+        $res = $repo->run( 'branch' => '--no-track' => $name => "FETCH_HEAD" );
+        $res->exit == 0 || die "Branch failed";
+
+        $res = $repo->run( 'checkout' => "-q" => $name );
+        $res->exit == 0
           || die "Checking out new local branch failed";
-        print "Created local branch $branch based on $remote's $branch\n";
+        print "Created local branch $branch based on $remote's $name\n";
+        return;
     }
-    else {
-        $repo->run( 'fetch', => "-q", $remote, $branch ) || die "Fetch failed";
-        $repo->run( 'branch' => qw/--no-track/, $branch, "FETCH_HEAD" )
-          || die "Branch failed";
-        $repo->run( 'checkout', '-q', $branch )
-          || die "Checking out new local branch failed";
-        print "Created local branch $branch based on $remote's branch\n";
-    }
+
+    my $res = $repo->run( 'fetch', => "-q" => $remote => $name );
+    $res->exit == 0 || die "Fetch failed";
+
+    $res = $repo->run( 'branch' => '--no-track' => $name => "FETCH_HEAD" );
+    $res->exit == 0 || die "Branch failed";
+
+    $res = $repo->run( 'checkout', '-q', $name );
+    $res->exit == 0 || die "Checking out new local branch failed";
+    print "Created local branch $branch based on $remote's branch\n";
 }
 
 sub feature_checkout {
     my ( $self, $name ) = @_;
 
-    my $repo = $self->{repo};
-
-    if ( defined $name ) {
-        my $branch_name = $self->prefix . $name;
-        $repo->run( 'checkout' => $branch_name );
-    }
-    else {
+    if ( !$name ) {
         Carp::croak "Name a feature branch explicitly";
     }
+
+    $name = $self->expand_nameprefix($name);
+    $self->{repo}->run( 'checkout' => $name );
 }
 
 sub feature_diff {
     my $self = shift;
+    my $name = shift;
 
-    my $name;
-    if (@_ == 1) {
-        $name = shift;
-    }
+    my $repo   = $self->{repo};
+    my $prefix = $self->feature_prefix();
 
-    my $branch; my $devel;
-    my $repo = $self->{repo};
-    if (defined $name) {
-        my $base = $repo->run('merge-base', $self->{devel_branch}, $branch);
-        $repo->run('diff' => qw/$base..$branch/);
-    }else{
-        my $current_branch = $self->current_branch();
-        my $prefix = $self->prefix;
-        if ($current_branch !~ /^$prefix/) {
+    if ( !defined $name ) {
+        my $current_branch = $self->git_current_branch();
+        if ( $current_branch !~ /^$prefix/ ) {
             Carp::croak("Not on a feature branch. Name one explicitly");
         }
-        my $base = $repo->run('merge-base', $devel, "HEAD");
-        $repo->run('diff' => $base);
+        my $base = $repo->run( 'merge-base' => $devel => "HEAD" );
+        $repo->run( 'diff' => $base );
+        return;
     }
+
+    $name = $self->expand_nameprefix($name);
+    my $base = $repo->run( 'merge-base' => $self->{devel_branch} => $name );
+    $repo->run( 'diff' => "$base..$name" );
 }
 
 sub feature_publish {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
 
-    my $repo = $self->{repo};
+    $self->expand_nameprefix($name);
+
+    my $repo   = $self->{repo};
+    my $origin = $self->{origin_branch};
 
     $self->require_clean_working_tree();
-    my $origin = $self->{origin_branch};
-    # XXX require_branch
-    $repo->run('fetch' => "-q", $origin);
+    $self->require_branch($name);
 
-    my $br_name;
-    my $prefix = $self->prefix();
-    $br_name = $prefix . $br_name;
-    $self->require_branch_absent($br_name);
+    # XXX require_branch
+    $repo->run( 'fetch' => "-q" => $origin );
+
+    $self->require_branch_absent( $origin . "/" . $name );
 
     # create remote branch
-    $repo->run('push', $origin, "$br_name:refs/heads/$br_name");
-    $repo->run('fetch', "-q", $origin);
+    $repo->run( 'push'  => $origin => "$name:refs/heads/$name" );
+    $repo->run( 'fetch' => "-q"    => $origin );
 
     # configure remote tracking
-    $repo->run('config', "branch.$br_name.remote", $origin);
-    $repo->run('config', "branch.$br_name.merge", "refs/head/$br_name");
-    $repo->run('checkout', $br_name);
+    $repo->run( 'config' => "branch.$name.remote" => $origin );
+    $repo->run( 'config' => "branch.$name.merge"  => "refs/head/$name" );
+    $repo->run( 'checkout' => $name );
 
     print << "_END_REPORT";
 Summary of actions:
-- A new remote branch '$br_name' was created
-- The local branch '$br_name' was configured to track the remote branch
-- You are now on branch '$br_name'
+- A new remote branch '$name' was created
+- The local branch '$name' was configured to track the remote branch
+- You are now on branch '$name'
 
 _END_REPORT
-    
+
 }
 
 sub feature_rebase {
     my $self = shift;
 
     my ( $interactive, $name ) = @_;
+
     if ( @_ == 2 ) {
         $interactive = shift;
-        $name        = shift;
     }
-    elsif ( @_ == 1 ) {
-        $name = shift;
-    }
+    $name = $self->expand_nameprefix(shift);
 
-    my $branch;
-
-    warn "Will try to rebase '$name'...";
+    warn "Will try to rebase '$name'...\n";
     $self->require_clean_working_tree();
-    $self->require_branch($branch);
+    $self->require_branch($name);
 
     my $repo = $self->{repo};
-    $repo->run( 'checkout', "-q", $branch );
+    $repo->run( 'checkout' => "-q" => $name );
+
     my @opts;
-    if ($interactive) {
-        push @opts, "-i";
-    }
+    push @opts, "-i" if $interactive;
     push @opts, $self->{devel_branch};
     $repo->run( 'rebase' => @opts );
 }
 
 sub _avoid_accidental_cross_branch_action {
-    my $self = shift;
+    my ( $self, $name ) = @_;
+    my $current_br = $self->git_current_branch();
+    if ( $current_br ne $name ) {
+        warn
+"Trying to pull from $name while currently on branch '$current_br'.\n";
+        warn "To avoid unintended merges, git-flow aborted.\n";
+        return 0;
+    }
+    return 1.;
 }
 
 sub _feature_end {1}
+
+sub expand_nameprefix {
+    my ( $self, $name ) = @_;
+    my $prefix = $self->feature_prefix();
+    $self->expand_prefix( $prefix, $name );
+}
 
 1;
 
