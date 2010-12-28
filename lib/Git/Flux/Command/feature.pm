@@ -144,7 +144,7 @@ sub feature_pull {
         Carp::croak("Name a remote explicitly");
     }
 
-    $current_branch = $self->git_current_branch();
+    my $current_branch = $self->git_current_branch();
     my $name = @_ == 1 ? $self->expand_nameprefix(shift) : $current_branch;
 
     my $prefix = $self->feature_prefix();
@@ -180,7 +180,7 @@ sub feature_pull {
         $res = $repo->run( 'checkout' => "-q" => $name );
         $res->exit == 0
           || die "Checking out new local branch failed";
-        print "Created local branch $branch based on $remote's $name\n";
+        print "Created local branch $name based on $remote's $name\n";
         return;
     }
 
@@ -192,7 +192,7 @@ sub feature_pull {
 
     $res = $repo->run( 'checkout', '-q', $name );
     $res->exit == 0 || die "Checking out new local branch failed";
-    print "Created local branch $branch based on $remote's branch\n";
+    print "Created local branch $name based on $remote's branch\n";
 }
 
 sub feature_checkout {
@@ -212,6 +212,7 @@ sub feature_diff {
 
     my $repo   = $self->{repo};
     my $prefix = $self->feature_prefix();
+    my $devel = $self->{'devel_branch'};
 
     if ( !defined $name ) {
         my $current_branch = $self->git_current_branch();

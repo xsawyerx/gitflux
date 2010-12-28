@@ -384,6 +384,7 @@ sub hotfix_prefix {
 
 sub version_prefix {
     (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.version' );
+}
 
 sub feature_prefix {
     (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.feature' );
