@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use mixin::with 'Git::Flux';
 use List::MoreUtils 'all';
+use Carp;
 
 sub git_local_branches {
     my $self     = shift;
@@ -339,8 +340,49 @@ sub require_branches_equal {
     }
 }
 
+sub require_base_is_on_master {
+    my ( $self, $base, $master_branch ) = @_;
+    my $res =
+      $self->{repo}->run( 'branch' => '--no-color' => '--contains' => $base );
+
+    if ( $res !~ /$master_branch/ ) {
+        Carp::croak(
+"fatal: Given base '$base' is not a valid commit on '$master_branch'"
+        );
+    }
+}
+
+sub require_no_existing_branches {
+    my ( $self, $prefix, $name ) = @_;
+    my @branches = grep { /^$prefix/ } $self->git_local_branches();
+    if ( scalar @branches ) {
+        my $first_branch = shift @branches;
+        Carp::croak(
+"There is an existing $prefix branch ($first_branch). Finish that one first"
+        );
+    }
+}
+
+sub parse_args {
+    my ( $self, $args ) = @_;
+    my %args;
+    if ( defined $args ) {
+        $args =~ s/-//;
+        map { $args{$_} => 1 } split '', $args;
+    }
+    return \%args;
+}
+
 sub is_interactive {
     return -t STDIN && -t STDOUT;
+}
+
+sub hotfix_prefix {
+    (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.hotfix' );
+}
+
+sub version_prefix {
+    (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.version' );
 }
 
 1;
