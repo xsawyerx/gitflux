@@ -36,7 +36,7 @@ sub feature_start {
 
     $name or Carp::croak "Missing argument <name>";
 
-    $name = $self->_expand_nameprefix($name);
+    $name = $self->expand_nameprefix($name);
     $self->require_branch_absent($name);
 
     # TODO: handle fetch flag handling
@@ -53,8 +53,12 @@ sub feature_start {
     my $result = $repo->command( checkout => '-b' => $name => $base );
     $result->close;
 
-    $result->exit == 0
-      or Carp::croak "Could not create feature branch '$name'";
+    my $res = $repo->command( checkout => '-b' => $name );
+    if ( $res->exit && $res->exit > 0 ) {
+        Carp::croak "Could not create feature branch '$name'";
+    }
+    $res->close;
+>>>>>>> rename nameprefix method; add and fix tests
 
     print << "_END_REPORT";
 Summary of actions:
@@ -109,7 +113,7 @@ sub feature_track {
     my ($self, $name) = @_;
     $name or Carp::croak "Missing argument <name>";
 
-    $name = $self->_expand_nameprefix($name);
+    $name = $self->expand_nameprefix($name);
     
     $self->require_clean_working_tree();
     $self->require_branch_absent($name);
@@ -142,7 +146,7 @@ sub feature_pull {
     }
 
     my $current_branch = $self->git_current_branch();
-    my $name = @_ == 1 ? $self->_expand_nameprefix(shift) : $current_branch;
+    my $name = @_ == 1 ? $self->expand_nameprefix(shift) : $current_branch;
 
     my $prefix = $self->feature_prefix();
 
@@ -199,7 +203,7 @@ sub feature_checkout {
         Carp::croak "Name a feature branch explicitly";
     }
 
-    $name = $self->_expand_nameprefix($name);
+    $name = $self->expand_nameprefix($name);
     $self->{repo}->run( 'checkout' => $name );
 }
 
@@ -222,6 +226,7 @@ sub feature_diff {
     }
 
     $name = $self->expand_nameprefix($name);
+
     my $base = $repo->run( 'merge-base' => $self->devel_branch => $name );
     $repo->run( 'diff' => "$base..$name" );
 }
@@ -229,7 +234,7 @@ sub feature_diff {
 sub feature_publish {
     my ( $self, $name ) = @_;
 
-    $self->_expand_nameprefix($name);
+    $self->expand_nameprefix($name);
 
     my $repo   = $self->repo;
     my $origin = $self->origin;
@@ -269,7 +274,7 @@ sub feature_rebase {
     if ( @_ == 2 ) {
         $interactive = shift;
     }
-    $name = $self->_expand_nameprefix(shift);
+    $name = $self->expand_nameprefix(shift);
 
     warn "Will try to rebase '$name'...\n";
     $self->require_clean_working_tree();
@@ -296,13 +301,14 @@ sub _avoid_accidental_cross_branch_action {
     return 1.;
 }
 
-sub _feature_end {1}
-
-sub _expand_nameprefix {
+sub expand_nameprefix {
     my ( $self, $name ) = @_;
     my $prefix = $self->feature_prefix();
     $self->expand_prefix( $prefix, $name );
 }
+
+
+sub _feature_end {1}
 
 1;
 

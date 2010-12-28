@@ -7,37 +7,34 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
-use Test::More skip_all => 'feature not implemented yet'; # 6
-use Test::Fatal;
+use Test::More;
 use TestFunctions;
 use Test::TinyMocker;
 
-{
-    # can't init without name
+plan tests => 6;
 
+{
+
+    # can't init without name
     my ( $flux, $repo ) = default_env();
 
-    is(
-        exception { $flux->run( feature => 'start' ) },
-        "Missing argument <name>\n",
-        'Cannot init without name',
-    );
+    eval { $flux->run( feature => 'start' ) };
+    like $@, qr/Missing argument <name>/, 'Cannot init without name',
 }
 
 {
-    # if branch name exists, we die
 
+    # if branch name exists, we die
     my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
 
     # create feature branch
-    $repo->run( branch => $branch );
+    $repo->run( branch => "feature/" . $branch );
 
-    is(
-        exception { $flux->run( feature => 'start', $branch ) },
-        qq{Branch '$branch' already exists. Pick another name.\n},
-        'Cannot create feature branch with pre-existing name',
-    );
+    eval { $flux->run( feature => 'start', $branch ) };
+    like $@,
+      qr/Branch 'feature\/$branch' already exists. Pick another name/,
+      'Cannot create feature branch with pre-existing name',
 }
 
 {
@@ -47,7 +44,6 @@ use Test::TinyMocker;
 
 {
     # assert origin's same-name branch isn't behind it
-
     my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
 
@@ -56,10 +52,7 @@ use Test::TinyMocker;
 
     # this shouldn't be a problem since it isn't really origin,
     # just looks like
-    ok(
-        ! exception { $flux->run( feature => 'start', $branch ) },
-        'No problem on differing branches',
-    );
+    ok $flux->run( feature => 'start', $branch );
 }
 
 {
@@ -71,28 +64,24 @@ use Test::TinyMocker;
 
 {
     # exception thrown when cannot create branch
-
     {
-        package Ztest;
-        sub close {1}
-        sub exit  {255}
-    }
 
+        package Ztest;
+        sub close { 1 }
+        sub exit  { 255 }
+    }
     my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
 
     # cripple branch creation so it doesn't work
-    mock 'Git::Repository'
-        => method 'command'
-        => should {
-            return bless {}, 'Ztest';
-        };
+    mock 'Git::Repository' => method 'command' => should {
+        return bless {}, 'Ztest';
+    };
 
-    is(
-        exception { $flux->run( feature => 'start', $branch ) },
-        qq{Could not create feature branch '$branch'\n},
-        'Recognizing git branch failure',
-    );
+    eval { $flux->run( feature => 'start', $branch ) };
+    like $@,
+      qr/Could not create feature branch 'feature\/$branch'/,
+      'Recognizing git branch failure';
 
     unmock 'Git::Repository' => method 'command';
 }
@@ -103,14 +92,9 @@ use Test::TinyMocker;
     my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
 
-    ok(
-        ! exception { $flux->run( feature => 'start', $branch ) },
-        'feature start command lives',
-    );
+    ok $flux->run( feature => 'start', $branch ), 'feature start command lives';
 
-    ok(
-        $flux->git_branch_exists($branch),
-        'branch was created successfully',
-    );
+    ok $flux->git_branch_exists('feature/'.$branch),
+      'branch was created successfully';
 }
 
