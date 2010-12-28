@@ -209,6 +209,7 @@ sub feature_diff {
 
     my $repo   = $self->repo;
     my $prefix = $self->feature_prefix();
+    my $devel = $self->{'devel_branch'};
 
     if ( !defined $name ) {
         my $current_branch = $self->git_current_branch();
