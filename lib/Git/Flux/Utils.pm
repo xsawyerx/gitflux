@@ -309,7 +309,8 @@ sub require_branch_absent {
     my $repo   = $self->{'repo'};
 
     grep { $_ eq $branch } $self->git_all_branches
-        or die "Branch '$branch' already exists. Pick another name.\n";
+      and die "Branch '$branch' already exists. Pick another name.\n";
+
 }
 
 sub require_tag_absent {
@@ -383,6 +384,15 @@ sub hotfix_prefix {
 
 sub version_prefix {
     (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.version' );
+
+sub feature_prefix {
+    (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.feature' );
+}
+
+sub expand_prefix {
+    my ( $self, $prefix, $name ) = @_;
+    return $name if $name =~ /^$prefix/;
+    return $prefix . $name;
 }
 
 1;

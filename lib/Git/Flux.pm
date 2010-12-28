@@ -10,6 +10,7 @@ use mixin 'Git::Flux::Utils';
 
 # commands
 use mixin 'Git::Flux::Command::init';
+use mixin 'Git::Flux::Command::feature';
 use mixin 'Git::Flux::Command::help';
 
 our $VERSION = '0.0_03';
