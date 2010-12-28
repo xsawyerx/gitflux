@@ -44,7 +44,11 @@ sub feature_start {
     }
 
     $name = $self->expand_nameprefix($name);
-    $self->require_branch_absent($name);
+
+    eval { $self->require_branch_absent($name); };
+    if ( my $err = $@ ) {
+        return Git::Flux::Response->new( status => 0, error => $err );
+    }
 
     # TODO: handle fetch flag handling
 
@@ -64,7 +68,7 @@ sub feature_start {
     if ( $res->exit && $res->exit > 0 ) {
         Carp::croak "Could not create feature branch '$name'";
     }
-    $res->close;
+    $result->close;
 
     my $message = qq{
 Summary of actions:
