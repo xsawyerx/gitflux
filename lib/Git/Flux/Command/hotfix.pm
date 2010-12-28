@@ -23,6 +23,7 @@ sub hotfix_list {
     my $self = shift;
     my $verbose = shift || 0;
 
+    my $prefix = $self->hotfix_prefix;
     my @hotfix_branches = grep { /^$prefix/ } $self->git_local_branches();
 
     if (scalar @hotfix_branches == 0) {
@@ -67,7 +68,7 @@ sub hotfix_start {
 
     my $base = shift || $self->{'master_branch'};
     $self->require_base_is_on_master( $base, $self->{'master_branch'} );
-    $self->require_no_existing_hotfix_branches();
+    $self->_require_no_existing_hotfix_branches();
 
     $self->require_clean_working_tree();
     $self->require_branch_absent($branch);
@@ -121,7 +122,7 @@ sub hotfix_finish {
         $res->exit == 0 || Carp::croak("Could not fetch $master from $origin");
 
         $res = $repo->run( 'fetch' => '-q' => $origin => $devel );
-        $res->exit == 0 || Carp::croak("Could not fetch $develop from $origin");
+        $res->exit == 0 || Carp::croak("Could not fetch $devel from $origin");
     }
 
     foreach my $br_name (qw/$master $devel/) {
@@ -146,7 +147,7 @@ sub hotfix_finish {
 
 Summary of actions:
 - Latest objects have been fetched from '$origin'
-- Hotfix branch has been merged into '$master_branch'
+- Hotfix branch has been merged into '$master'
 - The hotfix was tagger '$tag'
 - Hotfix branch has been back-merged into '$devel'
 
@@ -154,10 +155,63 @@ __END_REPORT
     
 }
 
-sub require_no_existing_hotfix_branches {
+sub _require_no_existing_hotfix_branches {
     my ($self, $name) = @_;
     my $prefix = $self->hotfix_prefix();
     $self->require_not_existing_branches($prefix, $name);
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Git::Flux::Command::hotfix - hotfix command to Gitflux
+
+=head1 DESCRIPTION
+
+This provides hotfix branches functionality to Gitflux.
+
+=head1 SUBROUTINES/METHODS
+
+=head2 hotfix
+
+hotfix can be started, finished, listed, etc.
+
+=head2 hotfix_start
+
+The method that runs on C<git flux hotfix start>.
+
+=head2 hotfix_list
+
+The method that runs on C<git flux hotfix list>. (This is the default command)
+
+=head2 hotfix_finish
+
+The method that runs on C<git flux hotfix finish>.
+
+=head1 AUTHORS
+
+Sawyer X, C<< <xsawyerx at cpan.org> >>
+
+Philippe Bruhat (BooK), C<< <book at cpan.org> >>
+
+=head1 BUGS
+
+Please use the Github Issues tracker.
+
+=head1 ACKNOWLEDGEMENTS
+
+c<gitflow>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2010 Sawyer X.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+

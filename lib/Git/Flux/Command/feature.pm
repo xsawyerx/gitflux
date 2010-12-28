@@ -60,6 +60,7 @@ sub feature_start {
             error  => "Could not create feature branch '$name'",
         );
     }
+    $res->close;
 
     my $message = qq{
 Summary of actions:
@@ -171,7 +172,7 @@ sub feature_pull {
         );
     }
 
-    $current_branch = $self->git_current_branch();
+    my $current_branch = $self->git_current_branch();
     my $name = @_ == 1 ? $self->expand_nameprefix(shift) : $current_branch;
 
     my $prefix = $self->feature_prefix();
@@ -266,6 +267,7 @@ sub feature_diff {
 
     my $repo   = $self->{repo};
     my $prefix = $self->feature_prefix();
+    my $devel = $self->{'devel_branch'};
 
     if ( !defined $name ) {
         my $current_branch = $self->git_current_branch();
@@ -356,13 +358,14 @@ sub _avoid_accidental_cross_branch_action {
     return 1;
 }
 
-sub _feature_end {1}
-
 sub expand_nameprefix {
     my ( $self, $name ) = @_;
     my $prefix = $self->feature_prefix();
     $self->expand_prefix( $prefix, $name );
 }
+
+
+sub _feature_end {1}
 
 1;
 
@@ -385,6 +388,34 @@ Features can be started, finished, listed, etc.
 =head2 feature_start
 
 The method that runs on C<git flux feature start>.
+
+=head2 feature_list
+
+The method that runs on C<git flux feature list>. (This is the default command)
+
+=head2 feature_track
+
+The method that runs on C<git flux feature track>.
+
+=head2 feature_pull
+
+The method that runs on C<git flux feature pull>.
+
+=head2 feature_checkout
+
+The method that runs on C<git flux feature checkout>.
+
+=head2 feature_diff
+
+The method that runs on C<git flux feature diff>.
+
+=head2 feature_publish
+
+The method that runs on C<git flux feature publish>.
+
+=head2 feature_rebase
+
+The method that runs on C<git flux feature rebase>.
 
 =head1 AUTHORS
 

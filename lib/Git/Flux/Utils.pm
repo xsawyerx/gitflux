@@ -384,6 +384,7 @@ sub hotfix_prefix {
 
 sub version_prefix {
     (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.version' );
+}
 
 sub feature_prefix {
     (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.feature' );
@@ -559,9 +560,27 @@ Asserts that a certain tag is absent.
 
 Asserts that two branches are equal.
 
+=head2 require_base_is_on_master($base, $master)
+
+Asserts that $base is a valid commit on $master
+
+=head2 require_no_existing_branches($prefix)
+
+Asserts that no branch exists for a given prefix
+
 =head2 is_interactive
 
 Returns boolean on whether we're in interactive mode.
+
+=head2 expand_prefix
+
+=head2 feature_prefix
+
+=head2 hotfix_prefix
+
+=head2 version_prefix
+
+=head2 parse_args
 
 =head1 AUTHORS
 
