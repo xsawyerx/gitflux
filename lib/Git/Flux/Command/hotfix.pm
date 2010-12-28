@@ -20,6 +20,7 @@ sub hotfix_list {
     my $verbose = shift || 0;
 
     my $prefix = $self->hotfix_prefix();
+
     my @hotfix_branches = grep { /^$prefix/ } $self->git_local_branches();
 
     if (scalar @hotfix_branches == 0) {
@@ -151,7 +152,7 @@ __END_REPORT
     
 }
 
-sub require_no_existing_hotfix_branches {
+sub _require_no_existing_hotfix_branches {
     my ($self, $name) = @_;
     my $prefix = $self->hotfix_prefix();
     $self->require_not_existing_branches($prefix, $name);
@@ -178,6 +179,14 @@ Hotfixes can be started, finished, listed, etc.
 =head2 hotfix_start
 
 The method that runs on C<git flux hotfix start>.
+
+=head2 hotfix_list
+
+The method that runs on C<git flux hotfix list>. (This is the default command)
+
+=head2 hotfix_finish
+
+The method that runs on C<git flux hotfix finish>.
 
 =head1 AUTHORS
 
