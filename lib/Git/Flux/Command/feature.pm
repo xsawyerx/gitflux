@@ -40,7 +40,11 @@ sub feature_start {
     }
 
     $name = $self->expand_nameprefix($name);
-    $self->require_branch_absent($name);
+
+    eval { $self->require_branch_absent($name); };
+    if ( my $err = $@ ) {
+        return Git::Flux::Response->new( status => 0, error => $err );
+    }
 
     # TODO: handle fetch flag handling
 
@@ -53,14 +57,14 @@ sub feature_start {
     }
 
     # create branch
-    my $result = $repo->command( checkout => '-b' => $name => $base );
+    my $result = $repo->command( checkout => '-b' => $name );
     if ( $result->exit && $result->exit > 0 ) {
         return Git::Flux::Response->new(
             status => 0,
             error  => "Could not create feature branch '$name'",
         );
     }
-    $res->close;
+    $result->close;
 
     my $message = qq{
 Summary of actions:
@@ -220,7 +224,7 @@ sub feature_pull {
 
         return Git::Flux::Response->new(
             status  => 1,
-            message => "Created local branch $branch based on $remot's $name",
+            message => "Created local branch $name based on $remot's $name",
         );
     }
 
@@ -242,7 +246,7 @@ sub feature_pull {
 
     return Git::Flux::Response->new(
         status  => 1,
-        message => "Created local branch $branch based on $remote's branch"
+        message => "Created local branch $name based on $remote's branch"
     );
 }
 
