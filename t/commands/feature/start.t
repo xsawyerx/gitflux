@@ -11,15 +11,15 @@ use Test::More;
 use TestFunctions;
 use Test::TinyMocker;
 
-plan tests => 6;
+plan tests => 11;
 
 {
 
     # can't init without name
     my ( $flux, $repo ) = default_env();
-
-    eval { $flux->run( feature => 'start' ) };
-    like $@, qr/Missing argument <name>/, 'Cannot init without name',
+    my $res = $flux->run( feature => 'start' );
+    ok !$res->is_success;
+    like $res->error, qr/Missing argument <name>/, 'Cannot init without name',
 }
 
 {
@@ -31,8 +31,9 @@ plan tests => 6;
     # create feature branch
     $repo->run( branch => "feature/" . $branch );
 
-    eval { $flux->run( feature => 'start', $branch ) };
-    like $@,
+    my $res = $flux->run( feature => 'start', $branch );
+    ok !$res->is_success;
+    like $res->error,
       qr/Branch 'feature\/$branch' already exists. Pick another name/,
       'Cannot create feature branch with pre-existing name',
 }
@@ -52,7 +53,9 @@ plan tests => 6;
 
     # this shouldn't be a problem since it isn't really origin,
     # just looks like
-    ok $flux->run( feature => 'start', $branch );
+    my $res = $flux->run( feature => 'start', $branch );
+    ok $res->is_success;
+    like $res->message, qr/Summary of actions/;
 }
 
 {
@@ -78,8 +81,9 @@ plan tests => 6;
         return bless {}, 'Ztest';
     };
 
-    eval { $flux->run( feature => 'start', $branch ) };
-    like $@,
+    my $res = $flux->run( feature => 'start', $branch );
+    ok !$res->is_success;
+    like $res->error,
       qr/Could not create feature branch 'feature\/$branch'/,
       'Recognizing git branch failure';
 
@@ -92,9 +96,9 @@ plan tests => 6;
     my ( $flux, $repo ) = default_env();
     my $branch = 'test_feature';
 
-    ok $flux->run( feature => 'start', $branch ), 'feature start command lives';
-
+    my $res =  $flux->run( feature => 'start', $branch );
+    ok ($res->is_success, "feature start command lives");
+    like $res->message, qr/Summary of actions/;
     ok $flux->git_branch_exists('feature/'.$branch),
       'branch was created successfully';
 }
-
