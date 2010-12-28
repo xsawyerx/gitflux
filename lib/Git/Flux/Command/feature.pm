@@ -41,7 +41,7 @@ sub feature_start {
 
     $name or Carp::croak "Missing argument <name>";
 
-    $name = $self->expand_nameprefix($name);
+    $name = $self->_expand_nameprefix($name);
     $self->require_branch_absent($name);
 
     # TODO: handle fetch flag handling
@@ -112,7 +112,7 @@ sub feature_track {
     my ($self, $name) = @_;
     $name or Carp::croak "Missing argument <name>";
 
-    $name = $self->expand_nameprefix($name);
+    $name = $self->_expand_nameprefix($name);
     
     $self->require_clean_working_tree();
     $self->require_branch_absent($name);
@@ -145,7 +145,7 @@ sub feature_pull {
     }
 
     my $current_branch = $self->git_current_branch();
-    my $name = @_ == 1 ? $self->expand_nameprefix(shift) : $current_branch;
+    my $name = @_ == 1 ? $self->_expand_nameprefix(shift) : $current_branch;
 
     my $prefix = $self->feature_prefix();
 
@@ -202,7 +202,7 @@ sub feature_checkout {
         Carp::croak "Name a feature branch explicitly";
     }
 
-    $name = $self->expand_nameprefix($name);
+    $name = $self->_expand_nameprefix($name);
     $self->{repo}->run( 'checkout' => $name );
 }
 
@@ -224,7 +224,7 @@ sub feature_diff {
         return;
     }
 
-    $name = $self->expand_nameprefix($name);
+    $name = $self->_expand_nameprefix($name);
     my $base = $repo->run( 'merge-base' => $self->{devel_branch} => $name );
     $repo->run( 'diff' => "$base..$name" );
 }
@@ -232,7 +232,7 @@ sub feature_diff {
 sub feature_publish {
     my ( $self, $name ) = @_;
 
-    $self->expand_nameprefix($name);
+    $self->_expand_nameprefix($name);
 
     my $repo   = $self->{repo};
     my $origin = $self->{origin_branch};
@@ -272,7 +272,7 @@ sub feature_rebase {
     if ( @_ == 2 ) {
         $interactive = shift;
     }
-    $name = $self->expand_nameprefix(shift);
+    $name = $self->_expand_nameprefix(shift);
 
     warn "Will try to rebase '$name'...\n";
     $self->require_clean_working_tree();
@@ -301,7 +301,7 @@ sub _avoid_accidental_cross_branch_action {
 
 sub _feature_end {1}
 
-sub expand_nameprefix {
+sub _expand_nameprefix {
     my ( $self, $name ) = @_;
     my $prefix = $self->feature_prefix();
     $self->expand_prefix( $prefix, $name );
@@ -328,6 +328,34 @@ Features can be started, finished, listed, etc.
 =head2 feature_start
 
 The method that runs on C<git flux feature start>.
+
+=head2 feature_list
+
+The method that runs on C<git flux feature list>. (This is the default command)
+
+=head2 feature_track
+
+The method that runs on C<git flux feature track>.
+
+=head2 feature_pull
+
+The method that runs on C<git flux feature pull>.
+
+=head2 feature_checkout
+
+The method that runs on C<git flux feature checkout>.
+
+=head2 feature_diff
+
+The method that runs on C<git flux feature diff>.
+
+=head2 feature_publish
+
+The method that runs on C<git flux feature publish>.
+
+=head2 feature_rebase
+
+The method that runs on C<git flux feature rebase>.
 
 =head1 AUTHORS
 
