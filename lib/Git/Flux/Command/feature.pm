@@ -88,6 +88,7 @@ You can start a new feature branch:
     git-flux feature start <name> [<base>]
 
 __END_REPORT
+        return;
     }
 
     my $current_branch = $self->git_current_branch();
