@@ -339,7 +339,7 @@ Summary of actions:
 sub feature_rebase {
     my $self = shift;
 
-    my ( $interactive, $name ) = @_;
+    my ( $interactive, $name );
 
     if ( @_ == 2 ) {
         $interactive = shift;
