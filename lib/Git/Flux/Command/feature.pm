@@ -149,10 +149,25 @@ sub feature_track {
     my $repo = $self->repo;
     my $origin = $self->origin;
 
-    $repo->run( 'fetch' => '-q' => $origin );
+    my $res = $repo->command( 'fetch' => '-q' => $origin );
+    my $err = $res->stderr->getline;
+    $res->close;
+    if ( $res->exit && $res->exit > 0 ) {
+        chomp $err;
+        return Git::Flux::Response->new(
+            status => 0,
+            error  => $err,
+        );
+    }
 
     my $origin_br = $origin . '/' . $name;
-    $self->require_branch($origin_br);
+    eval { $self->require_branch($origin_br); };
+    if ( my $err = $@ ) {
+        return Git::Flux::Response->new(
+            status => 0,
+            error  => $err,
+        );
+    }
 
     $repo->run( 'checkout' => '-b' => $name => $origin_br );
 
