@@ -57,14 +57,14 @@ sub feature_start {
     }
 
     # create branch
-    my $result = $repo->command( checkout => '-b' => $name );
-    if ( $result->exit && $result->exit > 0 ) {
+    my $cmd = $repo->command( checkout => '-b' => $name );
+    $cmd->close;
+    if ( $cmd->exit != 0 ) {
         return Git::Flux::Response->new(
             status => 0,
             error  => "Could not create feature branch '$name'",
         );
     }
-    $result->close;
 
     my $message = qq{
 Summary of actions:
@@ -110,17 +110,10 @@ You can start a new feature branch:
 
     my $message = '';
     foreach my $branch (@features_branches) {
-        my $base = $repo->run( 'merge-base' => $branch => $devel_branch );
-        my $develop_sha = $repo->run( 'rev-parse' => $devel_branch );
-        my $branch_sha  = $repo->run( 'rev-parse' => $branch );
-        if ( $branch eq $current_branch ) {
-            $message .= '* ';
-        }
-        else {
-            $message .= '  ';
-        }
+        $message .= $branch eq $current_branch ? '* ' : ' ';
         $message .= "$branch\n";
     }
+
     return Git::Flux::Response->new(
         status  => 1,
         message => $message,
@@ -145,11 +138,10 @@ sub feature_track {
     my $repo   = $self->{'repo'};
     my $origin = $self->{'origin_branch'};
 
-    my $res = $repo->command( 'fetch' => '-q' => $origin );
-    my $err = $res->stderr->getline;
-    $res->close;
-    if ( $res->exit && $res->exit > 0 ) {
-        chomp $err;
+    my $cmd = $repo->command( 'fetch' => '-q' => $origin );
+    my $err = $cmd->stderr->getline;
+    $cmd->close;
+    if ( $cmd->exit != 0 ) {
         return Git::Flux::Response->new(
             status => 0,
             error  => $err,
@@ -165,7 +157,15 @@ sub feature_track {
         );
     }
 
-    $repo->run( 'checkout' => '-b' => $name => $origin_br );
+    $cmd = $repo->command( 'checkout' => '-b' => $name => $origin_br );
+    $err = $cmd->stderr->getline;
+    $cmd->close;
+    if ( $cmd->exit != 0 ) {
+        return Git::Flux::Response->new(
+            status => 0,
+            error  => $err,
+        );
+    }
 
     my $message = qq{
 
@@ -276,8 +276,13 @@ sub feature_checkout {
     }
 
     $name = $self->expand_nameprefix($name);
-    $self->{repo}->run( 'checkout' => $name );
-    return Git::Flux::Response->new(status => 1);
+    my $cmd = $self->{repo}->command( 'checkout' => $name );
+    my $err = $cmd->stderr->getline;
+    $cmd->close;
+    if ( $cmd->exit != 0 ) {
+        return Git::Flux::Response->new( status => 0, error => $err );
+    }
+    return Git::Flux::Response->new( status => 1 );
 }
 
 sub feature_diff {
@@ -286,7 +291,7 @@ sub feature_diff {
 
     my $repo   = $self->{repo};
     my $prefix = $self->feature_prefix();
-    my $devel = $self->{'devel_branch'};
+    my $devel  = $self->{'devel_branch'};
 
     if ( !defined $name ) {
         my $current_branch = $self->git_current_branch();
@@ -297,12 +302,17 @@ sub feature_diff {
             );
         }
         my $base = $repo->run( 'merge-base' => $devel => "HEAD" );
-        $repo->run( 'diff' => $base );
-        return Git::Flux::Response->new(status => 1);
+        my $cmd = $repo->command( 'diff' => $base );
+        my @content = $cmd->stdout->getlines();
+        $cmd->close;
+        return Git::Flux::Response->new(
+            status  => 1,
+            message => join( "\n", @content )
+        );
     }
 
     $name = $self->expand_nameprefix($name);
-    my $base = $repo->run( 'merge-base' => $self->{devel_branch} => $name );
+    my $base = $repo->run( 'merge-base' => $devel => $name );
     $repo->run( 'diff' => "$base..$name" );
     return Git::Flux::Response->new(status => 1);
 }
