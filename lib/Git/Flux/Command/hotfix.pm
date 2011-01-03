@@ -2,6 +2,9 @@ package Git::Flux::Command::hotfix;
 
 use strict;
 use warnings;
+
+use Git::Flux::Response;
+
 use mixin::with 'Git::Flux';
 
 # TODO
@@ -26,33 +29,34 @@ sub hotfix_list {
     my $prefix = $self->hotfix_prefix;
     my @hotfix_branches = grep { /^$prefix/ } $self->git_local_branches();
 
-    if (scalar @hotfix_branches == 0) {
-        print << "__END_REPORT";
+    if ( scalar @hotfix_branches == 0 ) {
+        my $msg = qq{
 No hotfix branches exists
 
 You can start a new hotfix branch:
 
     git flow hotfix start <name> [<base>]
 
-__END_REPORT
-        return;
+};
+        return Git::Flux::Response->new(
+            status => 0,
+            error  => $msg,
+        );
     }
 
     my $current_branch = $self->git_current_branch();
-    my $master_branch   = $self->{'master_branch'};
-    my $repo = $self->{repo};
+    my $master_branch  = $self->{'master_branch'};
+    my $repo           = $self->{repo};
 
+    my $message = '';
     foreach my $branch (@hotfix_branches) {
-        my $base = $repo->run( 'merge-base' => $branch => $master_branch );
-        my $master_sha = $repo->run('rev-parse' => $master_branch);
-        my $branch_sha = $repo->run('rev-parse' => $branch);
-        if ($branch eq $current_branch) {
-            print '* ';
-        }else{
-            print ' ';
-        }
-        print "$branch\n";
+        $message .= $branch eq $current_branch ? '* ' : ' ';
+        $message .= "$branch\n";
     }
+    return Git::Flux::Response->new(
+        status  => 1,
+        message => $message,
+    );
 }
 
 sub hotfix_start {
