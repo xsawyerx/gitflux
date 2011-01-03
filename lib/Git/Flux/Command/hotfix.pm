@@ -65,24 +65,28 @@ sub hotfix_start {
     my $h_prefix = $self->hotfix_prefix;
     my $v_prefix = $self->version_prefix;
 
-    my $version = shift || Carp::croak("Missing argument <version>");
+    my $version = shift || return Git::Flux::Response->new(
+        status => 0,
+        error  => "Missing argument <version>"
+    );
 
     my $branch = $h_prefix . $version;
     my $tag    = $v_prefix . $version;
 
     my $base = shift || $self->{'master_branch'};
     $self->require_base_is_on_master( $base, $self->{'master_branch'} );
-    $self->_require_no_existing_hotfix_branches();
+    $self->require_no_existing_hotfix_branches();
 
     $self->require_clean_working_tree();
     $self->require_branch_absent($branch);
-    $self->required_tag_absent($tag);
+    $self->require_tag_absent($tag);
 
     # TODO fetch
 
     my $repo = $self->{repo};
-    $repo->run('checkout' => '-b' => $branch => $base);
-    print << "__END_REPORT";
+    my $cmd = $repo->command( 'checkout' => '-b' => $branch => $base );
+    $cmd->close;
+    my $message = qq{
 
 Summary of actions:
 - A new branch '$branch' was created, based on '$base'
@@ -95,14 +99,21 @@ Follow-up actions:
 
     git flow hotfix finish '$version'
 
-__END_REPORT
-    
+};
+    return Git::Flux::Response->new(
+        status  => 1,
+        message => $message,
+    );
 }
 
 sub hotfix_finish {
     my $self = shift;
 
-    my $version = pop || Carp::croak("Missing argument <version>");
+    my $version = pop || return Git::Flux::Response->new(
+        status => 0,
+        error  => "Missing argument <version>"
+    );
+
     my $args = $self->parse_args(shift);
 
     my $h_prefix = $self->hotfix_prefix;
@@ -119,14 +130,22 @@ sub hotfix_finish {
     my $devel  = $self->{'devel_branch'};
 
     my $repo = $self->{repo};
-    my $res;
+    my $cmd;
 
     if ( defined $args->{F} ) {
-        $res = $repo->run( 'fetch' => '-q' => $origin => $master );
-        $res->exit == 0 || Carp::croak("Could not fetch $master from $origin");
+        $cmd = $repo->command( 'fetch' => '-q' => $origin => $master );
+        $cmd->close;
+        $cmd->exit == 0 || return Git::Flux::Response->new(
+            status => 0,
+            error  => "Could not fetch $master from $origin"
+        );
 
-        $res = $repo->run( 'fetch' => '-q' => $origin => $devel );
-        $res->exit == 0 || Carp::croak("Could not fetch $devel from $origin");
+        $cmd = $repo->command( 'fetch' => '-q' => $origin => $devel );
+        $cmd->close;
+        $cmd->exit == 0 || Git::Flux::Response->new(
+            status => 0,
+            error => "Could not fetch $devel from $origin"
+        );
     }
 
     foreach my $br_name (qw/$master $devel/) {
@@ -140,14 +159,17 @@ sub hotfix_finish {
     if ( !defined $args->{n} ) {
         if ( $self->git_tag_exists($tag) ) {
             # TODO sign
-            my $res = $repo->run( 'tag' => $tag );
-            $res->exit == 0
-              || Carp::croak(
-                "Tagging failed. Please run finish again to retry.");
+            my $cmd = $repo->command( 'tag' => $tag );
+            $cmd->close;
+            $cmd->exit == 0
+              || return Git::Flux::Response->new(
+                status => 0,
+                error  => "Tagging failed. Please run finish again to retry."
+              );
         }
     }
 
-    print << "__END_REPORT";
+    my $message = qq{
 
 Summary of actions:
 - Latest objects have been fetched from '$origin'
@@ -155,14 +177,17 @@ Summary of actions:
 - The hotfix was tagger '$tag'
 - Hotfix branch has been back-merged into '$devel'
 
-__END_REPORT
-    
+};
+    return Git::Flux::Response->new(
+        status  => 1,
+        message => $message
+    );
 }
 
-sub _require_no_existing_hotfix_branches {
+sub require_no_existing_hotfix_branches {
     my ($self, $name) = @_;
     my $prefix = $self->hotfix_prefix();
-    $self->require_not_existing_branches($prefix, $name);
+    $self->require_no_existing_branches($prefix, $name);
 }
 
 1;
