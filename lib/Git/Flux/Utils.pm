@@ -317,8 +317,8 @@ sub require_tag_absent {
     my $self = shift;
     my $tag  = shift;
 
-    grep { $_ eq $tag } $self->git_all_tags
-        or die "Tag '$tag' already exists. Pick another name.\n";
+    my @tags = grep { $_ eq $tag } $self->git_all_tags;
+    die "Tag '$tag' already exists. Pick another name.\n" if scalar @tags;
 }
 
 sub require_branches_equal {
