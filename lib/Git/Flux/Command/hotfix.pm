@@ -157,7 +157,7 @@ sub hotfix_finish {
     }
 
     if ( !defined $args->{n} ) {
-        if ( $self->git_tag_exists($tag) ) {
+        if ( !$self->git_tag_exists($tag) ) {
             # TODO sign
             my $cmd = $repo->command( 'tag' => $tag );
             $cmd->close;
