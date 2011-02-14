@@ -1,8 +1,6 @@
 package Git::Flux::Command::help;
 
-use strict;
-use warnings;
-use mixin::with 'Git::Flux';
+use Mouse::Role;
 
 sub help {
     my $self = shift;

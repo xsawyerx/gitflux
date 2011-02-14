@@ -1,8 +1,6 @@
 package Git::Flux::Command::feature;
 
-use strict;
-use warnings;
-use mixin::with 'Git::Flux';
+use Mouse::Role;
 
 sub feature {
     my $self   = shift;

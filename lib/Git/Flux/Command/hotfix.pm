@@ -1,8 +1,6 @@
 package Git::Flux::Command::hotfix;
 
-use strict;
-use warnings;
-use mixin::with 'Git::Flux';
+use Mouse::Role;
 
 sub hotfix {
     my $self   = shift;

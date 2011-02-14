@@ -1,31 +1,24 @@
 package Git::Flux;
 
-use strict;
-use warnings;
-
+use Mouse;
 use Git::Repository;
 
 # common
-use mixin 'Git::Flux::Utils';
+with 'Git::Flux::Utils';
 
-# commands
-use mixin 'Git::Flux::Command::init';
-use mixin 'Git::Flux::Command::help';
+# commands 
+with qw/
+    Git::Flux::Command::init
+    Git::Flux::Command::help
+/;
 
 our $VERSION = '0.0_03';
 
-sub new {
-    my $class = shift;
-    my %opts  = @_;
-    my $self  = {
-        dir  => $opts{'dir'},
-        repo => $opts{'repo'},
-    };
+# Class attributes
+has 'dir'  => ( is => 'ro', isa => 'Str' );
+has 'repo' => ( is => 'ro', isa => 'Str' );
 
-    # TODO: add variables here for prefix (origin, feature, etc.)
-
-    bless $self, $class;
-}
+# TODO: add variables here for prefix (origin, feature, etc.)
 
 sub run {
     my $self = shift;
