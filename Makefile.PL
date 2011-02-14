@@ -6,6 +6,7 @@ WriteMakefile
           'NAME' => 'Git::Flux',
           'VERSION_FROM' => 'lib/Git/Flux.pm',
           'PREREQ_PM' => {
+                           'File::Slurp' => 0,
                            'File::Temp' => 0,
                            'Git::Repository' => 0,
                            'List::MoreUtils' => 0,
@@ -20,6 +21,9 @@ WriteMakefile
           'EXE_FILES' => [
                            'bin/git-flux'
                          ],
-          'PL_FILES' => {}
+          'PL_FILES' => {},
+          'test' => {
+                      'TESTS' => 't/*.t t/lib/*.t t/commands/*.t t/commands/feature/*.t t/commands/support/*.t'
+                    }
         )
 ;
