@@ -1,8 +1,7 @@
 package Git::Flux::Utils;
 
-use strict;
-use warnings;
-use mixin::with 'Git::Flux';
+use Mouse::Role;
+
 use List::MoreUtils 'all';
 
 sub git_local_branches {

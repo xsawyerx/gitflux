@@ -1,8 +1,7 @@
 package Git::Flux::Command::init;
 
-use strict;
-use warnings;
-use mixin::with 'Git::Flux';
+use Mouse::Role;
+
 use Try::Tiny;
 use Term::ReadLine;
 
