@@ -1,7 +1,6 @@
 package Git::Flux::Utils;
 
 use Mouse::Role;
-
 use List::MoreUtils 'all';
 
 sub git_local_branches {

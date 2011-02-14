@@ -1,6 +1,6 @@
 package Git::Flux::Command::hotfix;
 
-use Mouse;
+use Mouse::Role;
 
 sub hotfix {
     my $self   = shift;

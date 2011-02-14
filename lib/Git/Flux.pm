@@ -1,24 +1,24 @@
 package Git::Flux;
 
 use Mouse;
-
 use Git::Repository;
 
 # common
 with 'Git::Flux::Utils';
 
 # commands 
-with 'Git::Flux::Command::init';
-with 'Git::Flux::Command::help';
+with qw/
+    Git::Flux::Command::init
+    Git::Flux::Command::help
+/;
 
 our $VERSION = '0.0_03';
 
-#Attribut Class
-has 'dir'  => (is => 'ro', isa => 'Str');
-has 'repo' => (is => 'ro', isa => 'Str');
+# Class attributes
+has 'dir'  => ( is => 'ro', isa => 'Str' );
+has 'repo' => ( is => 'ro', isa => 'Str' );
 
 # TODO: add variables here for prefix (origin, feature, etc.)
-
 
 sub run {
     my $self = shift;

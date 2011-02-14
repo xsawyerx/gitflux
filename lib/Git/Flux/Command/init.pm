@@ -1,7 +1,6 @@
 package Git::Flux::Command::init;
 
 use Mouse::Role;
-
 use Try::Tiny;
 use Term::ReadLine;
 
