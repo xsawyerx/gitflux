@@ -6,6 +6,7 @@ sub hotfix {
     my $self   = shift;
     my $cmd    = shift;
     my $method = "feature_$cmd";
+    my $repo   = $self->{repo};
 
     $self->require_git_repo;
     $self->require_gitflux_initialized;
