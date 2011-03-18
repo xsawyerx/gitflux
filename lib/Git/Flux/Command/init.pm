@@ -18,14 +18,11 @@ sub init {
         $force eq '-f' or die "Improper opt to init: $force\n";
     }
 
-    try     {
-        $repo = $self->{'repo'} =
-            Git::Repository->new( work_tree => $dir ) }
-    catch   {
-        $repo = $self->{'repo'} =
-            Git::Repository->create( 'init' => { cwd => $dir } );
-    } finally {
-        @_ and $failed++;
+    try {
+        $self->repo->create(init => $dir);
+    }catch{
+        warn $_;
+        $failed++;
     };
 
     unless ($failed) {
@@ -40,7 +37,7 @@ sub init {
     # set up master branch
     if ( $self->gitflux_has_master_configured && ! $force ) {
         $master_branch =
-            $repo->run( config => qw/ --get  gitflux.branch.master / );
+            $self->repo->run( config => qw/ --get  gitflux.branch.master / );
     } else {
         # Two cases are distinguished:
         # 1. A fresh git repo (without any branches)
@@ -54,7 +51,7 @@ sub init {
         if ( @local_branches == 0 ) {
             print "No branches exist yet. Base branches must be created now.\n";
             $check_existence    = 0;
-            $default_suggestion = $repo->run(
+            $default_suggestion = $self->repo->run(
                 config => qw/ --get gitflux.branch.master /
             ) || 'master';
         } else {
@@ -64,7 +61,7 @@ sub init {
 
             $check_existence = 1;
             my @guesses = (
-                $repo->run( config => qw/ --get gitflux.branch.master / ),
+                $self->repo->run( config => qw/ --get gitflux.branch.master / ),
                 qw/ production main master /
             );
 
@@ -90,12 +87,12 @@ sub init {
                 or die "Local branch '$master_branch' does not exist.\n";
         }
 
-        $repo->run( config => 'gitflux.branch.master', $master_branch );
+        $self->repo->run( config => 'gitflux.branch.master', $master_branch );
     }
 
     # set up devel branch
     if ( $self->gitflux_has_devel_configured && ! $force ) {
-        $devel_branch = $repo->run( config => qw/--get gitflux.branch.devel/ );
+        $devel_branch = $self->repo->run( config => qw/--get gitflux.branch.devel/ );
     } else {
         # Again, the same two cases as with the master selection are
         # considered (fresh repo or repo that contains branches)
@@ -105,7 +102,7 @@ sub init {
 
         if ( @local_branches_wo_master == 0 ) {
             $check_existence = 0;
-            $default_suggestion = $repo->run(
+            $default_suggestion = $self->repo->run(
                 config => qw/ --get gitflux.branch.devel /
             ) || 'devel';
         } else {
@@ -117,7 +114,7 @@ sub init {
 
             $check_existence = 1;
             my @guesses = (
-                $repo->run( config => qw/ --get gitflux.branch.devel / ),
+                $self->repo->run( config => qw/ --get gitflux.branch.devel / ),
                 qw/ devel develop int integration master /
             );
 
@@ -149,7 +146,7 @@ sub init {
                 or die "Local branch '$devel_branch' does not exist.\n";
         }
 
-        $repo->run( config => 'gitflux.branch.devel', $devel_branch );
+        $self->repo->run( config => 'gitflux.branch.devel', $devel_branch );
     }
 
     # Creation of HEAD
@@ -157,12 +154,12 @@ sub init {
     # We create a HEAD now, if it does not exist yet (in a fresh repo). We need
     # it to be able to create new branches.
     my $created_gitflux_branch;
-    my $cmd = $repo->command( 'rev-parse' => qw/ --quiet --verify HEAD / );
+    my $cmd = $self->repo->command( 'rev-parse' => qw/ --quiet --verify HEAD / );
     $cmd->close;
 
     if ( $cmd->exit == 1 ) {
-        $repo->run( 'symbolic-ref' => 'HEAD', "refs/heads/$master_branch" );
-        $repo->run( commit => qw/--allow-empty --quiet -m/, 'Initial commit' );
+        $self->repo->run( 'symbolic-ref' => 'HEAD', "refs/heads/$master_branch" );
+        $self->repo->run( commit => qw/--allow-empty --quiet -m/, 'Initial commit' );
         $created_gitflux_branch = 1;
     }
 
@@ -179,7 +176,7 @@ sub init {
     # default production branch and devel was "created".  We should create
     # the devel branch now in that case (we base it on master, of course)
     if ( ! $self->git_local_branch_exists($devel_branch) ) {
-        $repo->run( branch => '--no-track', $devel_branch, $master_branch );
+        $self->repo->run( branch => '--no-track', $devel_branch, $master_branch );
         $created_gitflux_branch = 1;
     }
 
@@ -188,29 +185,29 @@ sub init {
 
     # switch to devel if newly created
     if ($created_gitflux_branch) {
-        $repo->run( checkout => '-q', $devel_branch );
+        $self->repo->run( checkout => '-q', $devel_branch );
     }
 
     # finally, ask the user for naming conventions (branch and tag prefixes)
     if (
         $force ||
-        ! $repo->run( config => qw/--get gitflux.prefix.feature/    ) ||
-        ! $repo->run( config => qw/--get gitflux.prefix.release/    ) ||
-        ! $repo->run( config => qw/--get gitflux.prefix.hotfix/     ) ||
-        ! $repo->run( config => qw/--get gitflux.prefix.support/    ) ||
-        ! $repo->run( config => qw/--get gitflux.prefix.versiontag/ )
+        ! $self->repo->run( config => qw/--get gitflux.prefix.feature/    ) ||
+        ! $self->repo->run( config => qw/--get gitflux.prefix.release/    ) ||
+        ! $self->repo->run( config => qw/--get gitflux.prefix.hotfix/     ) ||
+        ! $self->repo->run( config => qw/--get gitflux.prefix.support/    ) ||
+        ! $self->repo->run( config => qw/--get gitflux.prefix.versiontag/ )
     ) {
         print "\nHow to name your supporting branch prefixes?\n";
     }
 
     foreach my $type ( qw/ feature release hotfix support versiontag / ) {
-        my $cmd = $repo->command( config => '--get', "gitflux.prefix.$type" );
+        my $cmd = $self->repo->command( config => '--get', "gitflux.prefix.$type" );
         $cmd->close;
 
         my $prefix = '';
 
         if ( $cmd->exit == 1 or $force ) {
-            my $default_suggestion = $repo->run(
+            my $default_suggestion = $self->repo->run(
                 config => '--get', "gitflux.prefix.$type"
             ) || "$type/";
 
@@ -234,7 +231,7 @@ sub init {
             ( defined $answer and $answer eq '-' )
                 or $prefix = $answer;
 
-            $repo->run( config => "gitflux.prefix.$type", $prefix );
+            $self->repo->run( config => "gitflux.prefix.$type", $prefix );
         }
     }
 }

@@ -17,6 +17,8 @@ use Git::Repository;
 plan skip_all => 'Default git binary not found in PATH'
     if !Git::Repository::Command::_is_git('git');
 
+plan tests => 10;
+
 {
     # remove interactive mode
     no warnings qw/redefine once/;
