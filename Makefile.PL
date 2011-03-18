@@ -8,7 +8,7 @@ WriteMakefile
           'PREREQ_PM' => {
                            'File::Slurp' => 0,
                            'File::Temp' => 0,
-                           'Git::Repository' => 0,
+                           'Git::Repository' => '1.17',
                            'List::MoreUtils' => 0,
                            'Term::ReadLine' => 0,
                            'Test::Fatal' => 0,
