@@ -1,5 +1,6 @@
 package Git::Flux;
 
+use Carp;
 use Mouse;
 use Git::Repository;
 
@@ -11,15 +12,67 @@ with qw/
     Git::Flux::Command::init
     Git::Flux::Command::help
     Git::Flux::Command::feature
+    Git::Flux::Command::hotfix
 /;
 
 our $VERSION = '0.0_03';
 
 # Class attributes
-has 'dir'  => ( is => 'ro', isa => 'Str' );
-has 'repo' => ( is => 'ro', isa => 'Str' );
+has dir => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+);
 
-# TODO: add variables here for prefix (origin, feature, etc.)
+has git_dir => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->repo->run( 'rev-parse' => '--git-dir' );
+    }
+);
+
+has repo => (
+    is      => 'rw',
+    isa     => 'Git::Repository',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        Git::Repository->new( work_tree => $self->dir );
+    }
+);
+
+has master_branch => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->repo->run( config => qw/ --get gitflux.branch.master/ );
+    }
+);
+
+has devel_branch => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->repo->run( config => qw/ --get gitflux.branch.devel/ );
+    }
+);
+
+has origin => (
+    is      => 'rw',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
+        $self->repo->run( config => qw/--get gitflux.origin/ ) || 'origin';
+    }
+);
 
 sub run {
     my $self = shift;
@@ -28,18 +81,11 @@ sub run {
     # run help if no other cmd
     $cmd ||= $self->help();
 
-    if ( not defined $self->{'repo'} and $cmd ne 'init' ) {
-        # create the repo now
-        $self->create_repo();
+    if (!$self->meta->has_method($cmd)) {
+        die("`$cmd' is not supported by $0\n");
     }
 
     $self->$cmd(@opts);
-}
-
-sub create_repo {
-    my $self = shift;
-    my $dir  = $self->{'dir'} || '.';
-    $self->{'repo'} = Git::Repository->new( work_tree => $dir );
 }
 
 1;
