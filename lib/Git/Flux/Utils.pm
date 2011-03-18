@@ -6,7 +6,7 @@ use Carp;
 
 sub git_local_branches {
     my $self     = shift;
-    my $repo     = $self->{'repo'};
+    my $repo     = $self->repo;
     my @branches = map { $_ =~ s/^\*?\s+//; $_; }
                   $repo->run( branch => '--no-color' );
 
@@ -15,7 +15,7 @@ sub git_local_branches {
 
 sub git_remote_branches {
     my $self     = shift;
-    my $repo     = $self->{'repo'};
+    my $repo     = $self->repo;
     my @branches = map { $_ =~ s/^\*?\s+//; $_; }
                    $repo->run( branch => '-r', '--no-color' );
 
@@ -24,7 +24,7 @@ sub git_remote_branches {
 
 sub git_all_branches {
     my $self     = shift;
-    my $repo     = $self->{'repo'};
+    my $repo     = $self->repo;
     my @branches = ( $self->git_local_branches, $self->git_remote_branches );
 
     return @branches;
@@ -32,7 +32,7 @@ sub git_all_branches {
 
 sub git_all_tags {
     my $self = shift;
-    my $repo = $self->{'repo'};
+    my $repo = $self->repo;
     my @tags = $repo->run('tag');
 
     return @tags;
@@ -40,7 +40,7 @@ sub git_all_tags {
 
 sub git_current_branch {
     my $self = shift;
-    my $repo = $self->{'repo'};
+    my $repo = $self->repo;
 
     my ($branch) = map  { $_ =~ s/^\*\s+//g; $_; }
                    grep { $_ !~ /no branch/      }
@@ -52,7 +52,7 @@ sub git_current_branch {
 
 sub git_is_clean_working_tree {
     my $self = shift;
-    my $repo = $self->{'repo'};
+    my $repo = $self->repo;
 
     my $cmd = $repo->command(
         diff => qw/ --no-ext-diff --ignore-submodules --quiet --exit-code /
@@ -74,7 +74,7 @@ sub git_is_clean_working_tree {
 
 sub git_repo_is_headless {
     my $self   = shift;
-    my $repo   = $self->{'repo'};
+    my $repo   = $self->repo;
     my $result = $repo->run( 'rev-parse' => qw/ --quiet --verify HEAD / );
 
     return not $result;
@@ -115,7 +115,7 @@ sub git_tag_exists {
 sub git_compare_branches {
     my $self        = shift;
     my ( $c1, $c2 ) = @_;
-    my $repo        = $self->{'repo'};
+    my $repo        = $self->repo;
 
     my $commit1 = $repo->run( 'rev-parse' => $c1 );
     my $commit2 = $repo->run( 'rev-parse' => $c2 );
@@ -138,7 +138,7 @@ sub git_compare_branches {
 sub git_is_branch_merged_into {
     my $self               = shift;
     my ( $subject, $base ) = @_;
-    my $repo               = $self->{'repo'};
+    my $repo               = $self->repo;
 
     my @all_merges = map { $_ =~ s/^\*?\s+//; $_; }
                     $repo->run(
@@ -150,7 +150,7 @@ sub git_is_branch_merged_into {
 
 sub gitflux_has_master_configured {
     my $self   = shift;
-    my $repo   = $self->{'repo'};
+    my $repo   = $self->repo;
     my $master = $repo->run( config => qw/ --get gitflux.branch.master / );
 
     return ( defined $master and $master ne '' ) &&
@@ -159,7 +159,7 @@ sub gitflux_has_master_configured {
 
 sub gitflux_has_devel_configured {
     my $self  = shift;
-    my $repo  = $self->{'repo'};
+    my $repo  = $self->repo;
     my $devel = $repo->run( config => qw/ --get gitflux.branch.devel / );
 
     return ( defined $devel and $devel ne '' ) &&
@@ -168,7 +168,7 @@ sub gitflux_has_devel_configured {
 
 sub gitflux_has_prefixes_configured {
     my $self    = shift;
-    my $repo    = $self->{'repo'};
+    my $repo    = $self->repo;
     my @results = map {
         $repo->run( config => '--get', "gitflux.prefix.$_" );
     } qw/ feature release hotfix support versiontag /;
@@ -178,7 +178,7 @@ sub gitflux_has_prefixes_configured {
 
 sub gitflux_is_initialized {
     my $self = shift;
-    my $repo = $self->{'repo'};
+    my $repo = $self->repo;
 
     return $self->gitflux_has_master_configured &&
            $self->gitflux_has_devel_configured  &&
@@ -187,25 +187,6 @@ sub gitflux_is_initialized {
                $repo->run( config => qw/ --get gitflux.branch.devel /  )
            )                                    &&
            $self->gitflux_has_prefixes_configured;
-}
-
-sub gitflux_load_settings {
-    my $self = shift;
-    my $repo = $self->{'repo'};
-
-    $self->{'dit_git_dir'}   = $repo->run( 'rev-parse' => '--git-dir' );
-
-    $self->{'master_branch'} = $repo->run(
-        config => qw/ --get gitflux.branch.master /
-    );
-
-    $self->{'devel_branch'}  = $repo->run(
-        config => qw/ --get gitflux.branch.devel /
-    );
-
-    $self->{'origin_branch'} = $repo->run(
-        config => qw/ --get gitflux.origin /
-    ) || 'origin';
 }
 
 # Inputs:
@@ -223,7 +204,7 @@ sub gitflux_load_settings {
 sub gitflux_resolve_nameprefix {
     my $self              = shift;
     my ( $name, $prefix ) = @_;
-    my $repo              = $self->{'repo'};
+    my $repo              = $self->repo;
 
     # check for perfect match
     if ( $self->git_local_branch_exists( $prefix . $name ) ) {
@@ -252,10 +233,6 @@ sub gitflux_resolve_nameprefix {
             return 2;
         }
     }
-}
-
-sub require_git_repo {
-    Git::Repository->new;
 }
 
 sub require_gitflux_initialized {
@@ -304,7 +281,7 @@ sub require_branch {
 sub require_branch_absent {
     my $self   = shift;
     my $branch = shift;
-    my $repo   = $self->{'repo'};
+    my $repo   = $self->repo;
 
     grep { $_ eq $branch } $self->git_all_branches
       and die "Branch '$branch' already exists. Pick another name.\n";
@@ -322,7 +299,7 @@ sub require_tag_absent {
 sub require_branches_equal {
     my $self          = shift;
     my ( $br1, $br2 ) = @_;
-    my $repo          = $self->{'repo'};
+    my $repo          = $self->repo;
 
     my $status = $self->git_compare_branches( $br1, $br2 );
 
@@ -342,7 +319,7 @@ sub require_branches_equal {
 sub require_base_is_on_master {
     my ( $self, $base, $master_branch ) = @_;
     my $res =
-      $self->{repo}->run( 'branch' => '--no-color' => '--contains' => $base );
+      $self->repo->run( 'branch' => '--no-color' => '--contains' => $base );
 
     if ( $res !~ /$master_branch/ ) {
         Carp::croak(
@@ -377,17 +354,15 @@ sub is_interactive {
 }
 
 sub hotfix_prefix {
-    (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.hotfix' );
+    (shift)->repo->run( 'config' => '--get' => 'gitflux.prefix.hotfix' );
 }
 
 sub version_prefix {
-    (shift)->{repo}->run( 'config' => '--get' => 'gitflux.prefix.version' );
+    (shift)->repo->run( 'config' => '--get' => 'gitflux.prefix.version' );
 }
 
 sub feature_prefix {
-    my $self = shift;
-    my $repo = $self->{'repo'};
-    return $repo->run( 'config' => '--get' => 'gitflux.prefix.feature' );
+    (shift)->repo->run( 'config' => '--get' => 'gitflux.prefix.feature' );
 }
 
 sub expand_prefix {
@@ -516,17 +491,9 @@ Returns a boolean on whether the gitflux prefixes are configured.
 
 Returns a boolean on whether gitflux itself is configured.
 
-=head2 gitflux_load_settings
-
-Loads all the gitflux settings.
-
 =head2 gitflux_resolve_nameprefix
 
 Returns a boolean on whether the gitflux devel is configured.
-
-=head2 require_git_repo
-
-Asserts a certain directory is a git repository.
 
 =head2 require_gitflux_initialized
 
