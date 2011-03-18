@@ -21,8 +21,7 @@ sub hotfix_list {
     my $self = shift;
     my $verbose = shift || 0;
 
-    # ????
-    my $prefix;
+    my $prefix = $self->hotfix_prefix();
     my @hotfix_branches = grep { /^$prefix/ } $self->git_local_branches();
 
     if (scalar @hotfix_branches == 0) {
@@ -121,7 +120,7 @@ sub hotfix_finish {
         $res->exit == 0 || Carp::croak("Could not fetch $master from $origin");
 
         $res = $repo->run( 'fetch' => '-q' => $origin => $devel );
-        $res->exit == 0 || Carp::croak("Could not fetch $develop from $origin");
+        $res->exit == 0 || Carp::croak("Could not fetch $devel from $origin");
     }
 
     foreach my $br_name (qw/$master $devel/) {
@@ -146,7 +145,7 @@ sub hotfix_finish {
 
 Summary of actions:
 - Latest objects have been fetched from '$origin'
-- Hotfix branch has been merged into '$master_branch'
+- Hotfix branch has been merged into '$master'
 - The hotfix was tagger '$tag'
 - Hotfix branch has been back-merged into '$devel'
 

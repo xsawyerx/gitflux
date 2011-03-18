@@ -177,7 +177,7 @@ sub feature_pull {
         $res = $repo->run( 'checkout' => "-q" => $name );
         $res->exit == 0
           || die "Checking out new local branch failed";
-        print "Created local branch $branch based on $remote's $name\n";
+        print "Created local branch $name based on $remote's $name\n";
         return;
     }
 
@@ -189,7 +189,7 @@ sub feature_pull {
 
     $res = $repo->run( 'checkout', '-q', $name );
     $res->exit == 0 || die "Checking out new local branch failed";
-    print "Created local branch $branch based on $remote's branch\n";
+    print "Created local branch $name based on $remote's branch\n";
 }
 
 sub feature_checkout {
@@ -215,7 +215,7 @@ sub feature_diff {
         if ( $current_branch !~ /^$prefix/ ) {
             Carp::croak("Not on a feature branch. Name one explicitly");
         }
-        my $base = $repo->run( 'merge-base' => $devel => "HEAD" );
+        my $base = $repo->run( 'merge-base' => $name => "HEAD" );
         $repo->run( 'diff' => $base );
         return;
     }
