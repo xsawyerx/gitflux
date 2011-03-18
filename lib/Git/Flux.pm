@@ -10,6 +10,7 @@ with 'Git::Flux::Utils';
 with qw/
     Git::Flux::Command::init
     Git::Flux::Command::help
+    Git::Flux::Command::feature
 /;
 
 our $VERSION = '0.0_03';
