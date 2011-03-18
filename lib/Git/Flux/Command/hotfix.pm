@@ -12,8 +12,6 @@ sub hotfix {
     my $cmd = shift || 'list';
     my $method = "hotfix_$cmd";
 
-    $self->gitflux_load_settings();
-
     $self->$method(@_);
 }
 
@@ -37,8 +35,8 @@ __END_REPORT
     }
 
     my $current_branch = $self->git_current_branch();
-    my $master_branch   = $self->{'master_branch'};
-    my $repo = $self->{repo};
+    my $master_branch   = $self->master_branch;
+    my $repo = $self->repo;
 
     foreach my $branch (@hotfix_branches) {
         my $base = $repo->run( 'merge-base' => $branch => $master_branch );
@@ -64,8 +62,8 @@ sub hotfix_start {
     my $branch = $h_prefix . $version;
     my $tag    = $v_prefix . $version;
 
-    my $base = shift || $self->{'master_branch'};
-    $self->require_base_is_on_master( $base, $self->{'master_branch'} );
+    my $base = shift || $self->master_branch;
+    $self->require_base_is_on_master( $base, $self->master_branch );
     $self->require_no_existing_hotfix_branches();
 
     $self->require_clean_working_tree();
@@ -74,7 +72,7 @@ sub hotfix_start {
 
     # TODO fetch
 
-    my $repo = $self->{repo};
+    my $repo = $self->repo;
     $repo->run('checkout' => '-b' => $branch => $base);
     print << "__END_REPORT";
 
@@ -108,11 +106,11 @@ sub hotfix_finish {
     $self->require_branch($branch);
     $self->require_clean_working_tree();
 
-    my $origin = $self->{'origin_branch'};
-    my $master = $self->{'master_branch'};
-    my $devel  = $self->{'devel_branch'};
+    my $origin = $self->origin;
+    my $master = $self->master_branch;
+    my $devel  = $self->devel_branch;
 
-    my $repo = $self->{repo};
+    my $repo = $self->repo;
     my $res;
 
     if ( defined $args->{F} ) {

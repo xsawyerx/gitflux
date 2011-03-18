@@ -23,8 +23,6 @@ sub feature {
     
     my $method = "feature_$cmd";
 
-    $self->gitflux_load_settings();
-
     # dispatch to methods
     $self->$method(@_);
 }
@@ -32,9 +30,9 @@ sub feature {
 sub feature_start {
     my $self = shift;
     my $name = shift; 
-    my $base = shift || $self->{'devel_branch'};
+    my $base = shift || $self->devel_branch;
     
-    my $repo = $self->{'repo'};
+    my $repo = $self->repo;
 
     $name or Carp::croak "Missing argument <name>";
 
@@ -43,8 +41,8 @@ sub feature_start {
 
     # TODO: handle fetch flag handling
 
-    my $devel_br = $self->{devel_branch};
-    my $origin   = $self->{origin_branch};
+    my $devel_br = $self->devel_branch;
+    my $origin   = $self->origin;
 
     # if remote exists, compare them
     if ( $self->git_branch_exists("$origin/$devel_br") ) {
@@ -53,6 +51,8 @@ sub feature_start {
 
     # create branch
     my $result = $repo->command( checkout => '-b' => $name => $base );
+    $result->close;
+
     $result->exit == 0
       or Carp::croak "Could not create feature branch '$name'";
 
@@ -71,7 +71,7 @@ _END_REPORT
 sub feature_list {
     my $self = shift;
 
-    my $repo   = $self->{repo};
+    my $repo   = $self->repo;
     my $prefix = $self->feature_prefix();
 
     my @features_branches = grep { /^$prefix/ } $self->git_local_branches();
@@ -89,7 +89,7 @@ __END_REPORT
     }
 
     my $current_branch = $self->git_current_branch();
-    my $devel_branch   = $self->{'devel_branch'};
+    my $devel_branch   = $self->devel_branch;
 
     foreach my $branch (@features_branches) {
         my $base = $repo->run( 'merge-base' => $branch => $devel_branch );
@@ -114,8 +114,8 @@ sub feature_track {
     $self->require_clean_working_tree();
     $self->require_branch_absent($name);
 
-    my $repo = $self->{'repo'};
-    my $origin = $self->{'origin_branch'};
+    my $repo = $self->repo;
+    my $origin = $self->origin;
 
     $repo->run( 'fetch' => '-q' => $origin );
 
@@ -158,7 +158,7 @@ sub feature_pull {
 
     $self->require_clean_working_tree();
 
-    my $repo = $self->{repo};
+    my $repo = $self->repo;
 
     if ( $self->git_branch_exists($name) ) {
         $self->_avoid_accidental_cross_branch_action($name) || Carp::croak("die");
@@ -207,7 +207,7 @@ sub feature_diff {
     my $self = shift;
     my $name = shift;
 
-    my $repo   = $self->{repo};
+    my $repo   = $self->repo;
     my $prefix = $self->feature_prefix();
 
     if ( !defined $name ) {
@@ -221,7 +221,7 @@ sub feature_diff {
     }
 
     $name = $self->expand_nameprefix($name);
-    my $base = $repo->run( 'merge-base' => $self->{devel_branch} => $name );
+    my $base = $repo->run( 'merge-base' => $self->devel_branch => $name );
     $repo->run( 'diff' => "$base..$name" );
 }
 
@@ -230,8 +230,8 @@ sub feature_publish {
 
     $self->expand_nameprefix($name);
 
-    my $repo   = $self->{repo};
-    my $origin = $self->{origin_branch};
+    my $repo   = $self->repo;
+    my $origin = $self->origin;
 
     $self->require_clean_working_tree();
     $self->require_branch($name);
@@ -274,12 +274,12 @@ sub feature_rebase {
     $self->require_clean_working_tree();
     $self->require_branch($name);
 
-    my $repo = $self->{repo};
+    my $repo = $self->repo;
     $repo->run( 'checkout' => "-q" => $name );
 
     my @opts;
     push @opts, "-i" if $interactive;
-    push @opts, $self->{devel_branch};
+    push @opts, $self->devel_branch;
     $repo->run( 'rebase' => @opts );
 }
 
