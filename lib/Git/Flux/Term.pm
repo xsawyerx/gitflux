@@ -25,6 +25,8 @@ sub answer {
         $self->is_interactive
       ? $self->term->readline($prompt)
       : $default_suggestion;
+
+    return $answer || $default_suggestion;
 }
 
 1;
