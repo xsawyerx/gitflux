@@ -1,29 +1,20 @@
 package Git::Flux::Response;
 
-use strict;
-use warnings;
+use Mouse;
 
-sub new {
-    my ($class, %params) = @_;
+has message => (
+    is  => 'rw',
+    isa => 'Str',
+);
 
-    my $self = \%params;
-    bless $self, $class;
-    return $self;
-}
+has error => (
+    is  => 'rw',
+    isa => 'Str',
+);
 
-sub is_success {
-    my $self = shift;
-    return $self->{status};
-}
-
-sub message {
-    my $self = shift;
-    return $self->{message};
-}
-
-sub error {
-    my $self = shift;
-    return $self->{error};
-}
+has status => (
+    is  => 'rw',
+    isa => 'Int',
+);
 
 1;
