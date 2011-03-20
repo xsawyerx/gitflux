@@ -1,9 +1,9 @@
 package Git::Flux::Command::feature;
 
 use Mouse::Role;
+use File::Spec;
 use Carp;
 
-# XXX missing
 # - finish
 # - rebase => need tests
 # - publish => need tests
@@ -290,6 +290,74 @@ sub feature_rebase {
     push @opts, $self->devel_branch;
     $repo->run( 'rebase' => @opts );
     return 1;
+}
+
+sub feature_finish {
+    my $self = shift;
+    my $name = $self->expand_nameprefix(shift);
+
+    # TODO handle fetch and rebase flag
+
+    $self->require_branch($name);
+
+    # TODO detect if we're restoring from a merge conflict
+    
+    $self->require_clean_working_tree();
+
+    my $origin = $self->origin;
+    my $devel = $self->devel_branch;
+    my @remotes_branches = $self->git_remote_branches;
+
+    if ( grep { $_ eq $origin . "/" . $name } @remotes_branches ) {
+        # XXX if rebase flag
+        # $self->repo->run( 'fetch' => '-q' => $origin => $name );
+        $self->require_branches_equal( $name, $origin . "/" . $name );
+    }
+
+    if ( grep { $_ eq $origin . "/" . $devel } @remotes_branches ) {
+        $self->require_branches_equal( $name, $origin . "/" . $devel );
+    }
+
+    # TODO do we want to rebase ?
+
+    my $res = $self->repo->command('checkout' => $devel);
+
+    $res = $self->repo->command('merge' => '--no-ff' =>  $name);
+    if ($res->exit && $res->exit > 0) {
+        my $path = File::Spec->catdir($self->repo->git_dir, '.gitflux');
+
+        mkdir File::Spec->catdir($path);
+        open my $fh, '>', File::Spec->catfile($path, 'MERGE_BASE');
+        print $fh $devel;
+        close $fh;
+
+        my $message = << '_END';
+
+There were merge conflicts. To resolve the merge conflict manually, use:
+    git mergetool
+    git commit
+
+You can then complete the finish by running it again:
+    git flow feature finish $name
+
+_END
+
+        return $message;
+    }
+
+   $self->repo->run('branch' => '-d' => $name);
+
+    my $message = << "_END";
+
+Summary of actions:
+
+- The feature branch '$name' was merged into '$devel'
+- Feature branch '$name' has been removed
+- You are now on branch '$devel'
+
+_END
+
+    return $message;
 }
 
 sub _avoid_accidental_cross_branch_action {
