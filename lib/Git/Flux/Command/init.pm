@@ -1,7 +1,5 @@
 package Git::Flux::Command::init;
 
-use Git::Flux::Response;
-
 use Mouse::Role;
 use Try::Tiny;
 
@@ -15,11 +13,7 @@ sub init {
     my ( $failed, $repo, $master_branch, $devel_branch, $prefix );
 
     if ($force) {
-        $force eq '-f'
-          or return Git::Flux::Response->new(
-            status => 0,
-            error  => "Improper opt to init: $force"
-          );
+        $force eq '-f' or die "Improper opt to init: $force";
     }
 
     try {
