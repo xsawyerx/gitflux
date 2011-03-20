@@ -127,7 +127,7 @@ sub init {
         my $prompt = 'Branch name for "next release" development: ' .
                      "[$default_suggestion] ";
 
-        $devel_branch = $self->answer($prompt, default_suggestion);
+        $devel_branch = $self->answer($prompt, $default_suggestion);
 
         if ( $master_branch eq $devel_branch ) {
             die "Production and integration branches should differ.\n";

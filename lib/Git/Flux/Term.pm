@@ -3,13 +3,14 @@ package Git::Flux::Term;
 use Mouse::Role;
 use Term::Readline;
 
-with term => (
+has term => (
     is      => 'rw',
     isa     => 'Term::Readline',
     lazy    => 1,
     default => sub {
         my $term = Term::Readline->new('Gitflux');
         $term->ornaments(0);
+        $term;
     },
 );
 
