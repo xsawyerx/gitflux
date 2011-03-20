@@ -15,13 +15,16 @@ sub init {
     my ( $failed, $repo, $master_branch, $devel_branch, $prefix );
 
     if ($force) {
-        $force eq '-f' or die "Improper opt to init: $force\n";
+        $force eq '-f'
+          or return Git::Flux::Response->new(
+            status => 0,
+            error  => "Improper opt to init: $force"
+          );
     }
 
     try {
-        $self->repo->create(init => $dir);
+        $self->repo(Git::Repository->create(init => $dir));
     }catch{
-        warn $_;
         $failed++;
     };
 
