@@ -84,7 +84,7 @@ plan tests => 11;
     my $res = $flux->run( feature => 'start', $branch );
     ok !$res->is_success;
     like $res->error,
-      qr/Could not create feature branch 'feature\/$branch'/,
+      qr/Could not create feature branch `feature\/$branch'/,
       'Recognizing git branch failure';
 
     unmock 'Git::Repository' => method 'command';

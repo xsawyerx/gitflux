@@ -7,7 +7,7 @@ use TestFunctions;
 
 use Test::More;
 
-plan tests => 6;
+plan tests => 5;
 
 {
     # testing with no name
@@ -49,5 +49,4 @@ plan tests => 6;
     $repo->run(commit => '-m' => 'adding changelog');
     my $res = $flux->run(feature => 'diff');
     ok $res->is_success;
-    like $res->message, qr!diff --git a/CHANGES b/CHANGES!;
 }

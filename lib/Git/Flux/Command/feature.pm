@@ -1,7 +1,6 @@
 package Git::Flux::Command::feature;
 
 use Mouse::Role;
-use Try::Tiny;
 use Carp;
 
 # XXX missing
@@ -11,8 +10,6 @@ use Carp;
 # - diff => need tests
 # - checkout => need tests
 # - pull => need tests
-
-use Git::Flux::Response;
 
 my $aliases = {
     co => 'checkout',
@@ -110,12 +107,7 @@ _END
 sub feature_track {
     my ( $self, $name ) = @_;
 
-    if ( !$name ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => "Missing argument <name>",
-        );
-    }
+    die "Missing argument <name>" if ( !$name );
 
     $name = $self->expand_nameprefix($name);
 
@@ -128,55 +120,32 @@ sub feature_track {
     my $cmd = $repo->command( 'fetch' => '-q' => $origin );
     my $err = $cmd->stderr->getline;
     $cmd->close;
-    if ( $cmd->exit != 0 ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => $err,
-        );
-    }
+    die $err if ( $cmd->exit != 0 );
 
     my $origin_br = $origin . '/' . $name;
-    eval { $self->require_branch($origin_br); };
-    if ( my $err = $@ ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => $err,
-        );
-    }
+    $self->require_branch($origin_br);
 
     $cmd = $repo->command( 'checkout' => '-b' => $name => $origin_br );
     $err = $cmd->stderr->getline;
     $cmd->close;
-    if ( $cmd->exit != 0 ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => $err,
-        );
-    }
+    die $err if ( $cmd->exit != 0 );
 
-    my $message = qq{
+    my $message = << '_END';
 
 Summary of actions:
 - A new remote tracking branch '$name' was created
 - You are now on branch '$name'
 
-};
-    return Git::Flux::Response->new(
-        status  => 1,
-        message => $message,
-    );
+_END
+
+    return $message;
 }
 
 sub feature_pull {
     my $self   = shift;
     my $remote = shift;
 
-    if ( !$remote ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error => "Name a remote explicitly",
-        );
-    }
+    die "Name a remote explicitly" if ( !$remote );
 
     my $current_branch = $self->git_current_branch();
     my $name = @_ == 1 ? $self->expand_nameprefix(shift) : $current_branch;
@@ -199,15 +168,10 @@ sub feature_pull {
 
     if ( $self->git_branch_exists($name) ) {
         $self->_avoid_accidental_cross_branch_action($name)
-          || return Git::Flux::Response->new( status => 0, error => "Die" );
+          || die "Die (?)";
 
         my $res = $repo->run( 'pull' => '-q' => $remote => $name );
-        if ( $res->exit && $res->exit > 0 ) {
-            return Git::Flux::Response->new(
-                status => 0,
-                error  => "Failed to pull from remote '$remote'",
-            );
-        }
+        die "Failed to pull from remote `$remote'";
 
         $res = $repo->run( 'fetch' => "-q" => $remote => $name );
         $res->exit == 0 || die "Fetch failed";
@@ -223,14 +187,10 @@ sub feature_pull {
     }
 
     my $res = $repo->run( 'fetch', => "-q" => $remote => $name );
-    $res->exit == 0
-      || return Git::Flux::Response->new( status => 0,
-        error => "Fetch failed" );
+    $res->exit == 0 || die "Fetch failed";
 
     $res = $repo->run( 'branch' => '--no-track' => $name => "FETCH_HEAD" );
-    $res->exit == 0
-      || return Git::Flux::Response->new( status => 0,
-        error => "Branch failed" );
+    $res->exit == 0 || die "Branch failed";
 
     $res = $repo->run( 'checkout', '-q', $name );
     $res->exit == 0 || die "Checking out new local branch failed";
@@ -240,21 +200,14 @@ sub feature_pull {
 sub feature_checkout {
     my ( $self, $name ) = @_;
 
-    if ( !$name ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => "Name a feature branch explicitly"
-        );
-    }
+    die "Name a feature branch explicitly" if ( !$name );
 
     $name = $self->expand_nameprefix($name);
     my $cmd = $self->{repo}->command( 'checkout' => $name );
     my $err = $cmd->stderr->getline;
     $cmd->close;
-    if ( $cmd->exit != 0 ) {
-        return Git::Flux::Response->new( status => 0, error => $err );
-    }
-    return Git::Flux::Response->new( status => 1 );
+    die $err if ( $cmd->exit != 0 );
+    return 1;
 }
 
 sub feature_diff {
@@ -263,26 +216,21 @@ sub feature_diff {
 
     my $repo   = $self->repo;
     my $prefix = $self->feature_prefix();
-    my $devel  = $self->{'devel_branch'};
+    my $devel  = $self->devel_branch;
 
     if ( !defined $name ) {
         my $current_branch = $self->git_current_branch();
-        if ( $current_branch !~ /^$prefix/ ) {
-            return Git::Flux::Response->new(
-                status => 0,
-                error  => "Not on a feature branch. Name one explicitly"
-            );
-        }
-        my $base = $repo->run( 'merge-base' => $name => "HEAD" );
-        $repo->run( 'diff' => $base );
-        return Git::Flux::Response->new(status => 1);
+        die "Not on a feature branch. Name one explicitly" if ( $current_branch !~ /^$prefix/ );
+        my $base = $repo->run( 'merge-base' => $current_branch => "HEAD" );
+        my $res = $repo->run( 'diff' => $base );
+        return 1;
     }
 
     $name = $self->expand_nameprefix($name);
 
     my $base = $repo->run( 'merge-base' => $self->devel_branch => $name );
     $repo->run( 'diff' => "$base..$name" );
-    return Git::Flux::Response->new(status => 1);
+    return 1;
 }
 
 sub feature_publish {
@@ -310,14 +258,15 @@ sub feature_publish {
     $repo->run( 'config' => "branch.$name.merge"  => "refs/head/$name" );
     $repo->run( 'checkout' => $name );
 
-    my $message = qq{
+    my $message = << '_END';
 Summary of actions:
 - A new remote branch '$name' was created
 - The local branch '$name' was configured to track the remote branch
 - You are now on branch '$name'
 
-};
-    return Git::Flux::Response->new( status => 1, message => $message );
+_END
+    
+    return $message;
 }
 
 sub feature_rebase {
@@ -340,15 +289,14 @@ sub feature_rebase {
     push @opts, "-i" if $interactive;
     push @opts, $self->devel_branch;
     $repo->run( 'rebase' => @opts );
-    return Git::Flux::Response->new(status => 1);
+    return 1;
 }
 
 sub _avoid_accidental_cross_branch_action {
     my ( $self, $name ) = @_;
     my $current_br = $self->git_current_branch();
     if ( $current_br ne $name ) {
-        warn
-"Trying to pull from $name while currently on branch '$current_br'.\n";
+        warn "Trying to pull from $name while currently on branch '$current_br'.\n";
         warn "To avoid unintended merges, git-flow aborted.\n";
         return 0;
     }
