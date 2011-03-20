@@ -2,8 +2,6 @@ package Git::Flux::Command::hotfix;
 
 use Mouse::Role;
 
-use Git::Flux::Response;
-
 # TODO
 # list (-v): need tests
 # start (-F version base):
@@ -33,10 +31,7 @@ You can start a new hotfix branch:
     git flow hotfix start <name> [<base>]
 
 };
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => $msg,
-        );
+        die $msg;
     }
 
     my $current_branch = $self->git_current_branch();
@@ -48,10 +43,7 @@ You can start a new hotfix branch:
         $message .= $branch eq $current_branch ? '* ' : ' ';
         $message .= "$branch\n";
     }
-    return Git::Flux::Response->new(
-        status  => 1,
-        message => $message,
-    );
+    return $message;
 }
 
 sub hotfix_start {
@@ -60,10 +52,7 @@ sub hotfix_start {
     my $h_prefix = $self->hotfix_prefix;
     my $v_prefix = $self->version_prefix;
 
-    my $version = shift || return Git::Flux::Response->new(
-        status => 0,
-        error  => "Missing argument <version>"
-    );
+    my $version = shift || die "Missing argument <version>\n";
 
     my $branch = $h_prefix . $version;
     my $tag    = $v_prefix . $version;
@@ -94,19 +83,13 @@ Follow-up actions:
     git flow hotfix finish '$version'
 
 };
-    return Git::Flux::Response->new(
-        status  => 1,
-        message => $message,
-    );
+    return $message;
 }
 
 sub hotfix_finish {
     my $self = shift;
 
-    my $version = pop || return Git::Flux::Response->new(
-        status => 0,
-        error  => "Missing argument <version>"
-    );
+    my $version = pop || die "Missing argument <version>\n";
 
     my $args = $self->parse_args(shift);
 
@@ -129,17 +112,11 @@ sub hotfix_finish {
     if ( defined $args->{F} ) {
         my $cmd = $repo->command( 'fetch' => '-q' => $origin => $master );
         $cmd->close;
-        $cmd->exit == 0 || return Git::Flux::Response->new(
-            status => 0,
-            error  => "Could not fetch $master from $origin"
-        );
+        $cmd->exit == 0 || die "Could not fetch $master from $origin\n";
 
         $cmd = $repo->command( 'fetch' => '-q' => $origin => $devel );
         $cmd->close;
-        $cmd->exit == 0 || Git::Flux::Response->new(
-            status => 0,
-            error => "Could not fetch $devel from $origin"
-        );
+        $cmd->exit == 0 || die "Could not fetch $devel from $origin\n";
     }
 
     foreach my $br_name (qw/$master $devel/) {
@@ -155,11 +132,7 @@ sub hotfix_finish {
             # TODO sign
             my $cmd = $repo->command( 'tag' => $tag );
             $cmd->close;
-            $cmd->exit == 0
-              || return Git::Flux::Response->new(
-                status => 0,
-                error  => "Tagging failed. Please run finish again to retry."
-              );
+            $cmd->exit == 0 || die "Tagging failed. Please run finish again to retry.\n";
         }
     }
 
@@ -172,10 +145,7 @@ Summary of actions:
 - Hotfix branch has been back-merged into '$devel'
 
 };
-    return Git::Flux::Response->new(
-        status  => 1,
-        message => $message
-    );
+    return $message;
 }
 
 sub require_no_existing_hotfix_branches {
