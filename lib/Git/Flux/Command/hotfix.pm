@@ -127,7 +127,7 @@ sub hotfix_finish {
     my $res;
 
     if ( defined $args->{F} ) {
-        $cmd = $repo->command( 'fetch' => '-q' => $origin => $master );
+        my $cmd = $repo->command( 'fetch' => '-q' => $origin => $master );
         $cmd->close;
         $cmd->exit == 0 || return Git::Flux::Response->new(
             status => 0,

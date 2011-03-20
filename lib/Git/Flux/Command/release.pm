@@ -1,11 +1,7 @@
 package Git::Flux::Command::release;
 
-use strict;
-use warnings;
-
+use Mouse::Role;
 use Git::Flux::Response;
-
-use mixin::with 'Git::Flux';
 
 sub release {
     my $self = shift;
@@ -20,7 +16,7 @@ sub release {
 sub release_list {
     my $self = shift;
 
-    my $repo = $self->{repo};
+    my $repo = $self->repo;
     my $prefix = $self->feature_prefix();
 
     my @releases_branches = grep { /^$prefix/ } $self->git_local_branches();

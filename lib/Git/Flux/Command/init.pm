@@ -1,16 +1,16 @@
 package Git::Flux::Command::init;
 
+use Git::Flux::Response;
+
 use Mouse::Role;
 use Try::Tiny;
-use Term::ReadLine;
+
+with qw/Git::Flux::Term/;
 
 sub init {
     my $self  = shift;
     my $force = shift;
     my $dir   = $self->dir;
-    my $term  = Term::ReadLine->new('Gitflux');
-
-    $term->ornaments(0);
 
     my ( $failed, $repo, $master_branch, $devel_branch, $prefix );
 
@@ -76,11 +76,7 @@ sub init {
         my $prompt = 'Branch name for production releases: ' .
                      "[$default_suggestion] ";
 
-        my $answer = $self->is_interactive    ?
-                     $term->readline($prompt) :
-                     $default_suggestion;
-
-        $master_branch = $answer || $default_suggestion;
+        $master_branch = $self->answer($prompt, $default_suggestion);
 
         if ($check_existence) {
             $self->git_local_branch_exists($master_branch)
@@ -131,11 +127,7 @@ sub init {
         my $prompt = 'Branch name for "next release" development: ' .
                      "[$default_suggestion] ";
 
-        my $answer = $self->is_interactive    ?
-                     $term->readline($prompt) :
-                     $default_suggestion;
-
-        $devel_branch = $answer || $default_suggestion;
+        $devel_branch = $self->answer($prompt, default_suggestion);
 
         if ( $master_branch eq $devel_branch ) {
             die "Production and integration branches should differ.\n";
@@ -219,9 +211,7 @@ sub init {
                          "Version tag prefix? [$default_suggestion] " :
                          ucfirst $type . " branches? [$default_suggestion] ";
 
-            my $answer = $self->is_interactive    ?
-                         $term->readline($prompt) :
-                         $default_suggestion;
+            my $answer = $self->answer($prompt, $default_suggestion);
 
             defined $answer and chomp $answer;
             ( defined $answer and $answer ne '' )
