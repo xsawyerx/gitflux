@@ -11,4 +11,4 @@ my $gitflux = Git::Flux->new(
 
 my $res = $gitflux->run(@ARGV);
 
-$res->is_success ? say $res->message : die $res->error."\n";
+$res->is_success ? say $res->message : die $res->error;
