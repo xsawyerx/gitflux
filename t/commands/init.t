@@ -41,16 +41,18 @@ plan tests => 12;
     $repo->run('commit' => '-m', 'test' );
     append_file( $file, "Dirty it up\n" );
 
-    is(
-        exception { $flux->run('init') },
+    my $res = $flux->run('init');
+    
+    is($res->error,
         "fatal: Working tree contains unstaged changes. Aborting.\n",
         'require clean working directory (unstaged)',
     );
 
     $repo->run( add => $file );
 
+    $res = $flux->run('init');
     is(
-        exception { $flux->run('init') },
+        $res->error,
         "fatal: Index contains uncommitted changes. Aborting.\n",
         'require clean working directory (uncommited)',
     );
@@ -64,8 +66,9 @@ plan tests => 12;
     my $flux = Git::Flux->new( dir => $dir );
     $flux->run('init');
 
+    my $res = $flux->run('init');
     is(
-        exception { $flux->run('init') },
+        $res->error,
         "Already initialized for gitflux.\n" .
             "To force reinitialization, use: git flux init -f\n",
         'reinit without force fails',
