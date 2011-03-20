@@ -15,6 +15,7 @@ has error => (
 has status => (
     is  => 'rw',
     isa => 'Int',
+    default => 1,
 );
 
 sub is_success { return (shift)->status }
