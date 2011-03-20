@@ -1,6 +1,7 @@
 package Git::Flux::Command::feature;
 
 use Mouse::Role;
+use Try::Tiny;
 use Carp;
 
 # XXX missing
@@ -36,19 +37,10 @@ sub feature_start {
     
     my $repo = $self->repo;
 
-    if ( !$name ) {
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => "Missing argument <name>",
-        );
-    }
+    die "Missing argument <name>" if ( !$name );
 
     $name = $self->expand_nameprefix($name);
-
-    eval { $self->require_branch_absent($name); };
-    if ( my $err = $@ ) {
-        return Git::Flux::Response->new( status => 0, error => $err );
-    }
+    $self->require_branch_absent($name);
 
     # TODO: handle fetch flag handling
 
@@ -66,10 +58,10 @@ sub feature_start {
 
     my $res = $repo->command( checkout => '-b' => $name );
     if ( $res->exit && $res->exit > 0 ) {
-        Carp::croak "Could not create feature branch '$name'";
+        Carp::croak "Could not create feature branch `$name'";
     }
-
-    my $message = qq{
+    
+    my $message = <<'_END';
 Summary of actions:
 - A new branch '$name' was created, based on '$base'
 - You are now on branch '$name'
@@ -77,12 +69,10 @@ Summary of actions:
 Now, start committing on your feature. When done, use:
 
      git flow feature finish $name
-};
 
-    return Git::Flux::Response->new(
-        status  => 1,
-        message => $message,
-    );
+_END
+
+    return $message;
 }
 
 sub feature_list {
@@ -94,18 +84,15 @@ sub feature_list {
     my @features_branches = grep { /^$prefix/ } $self->git_local_branches();
 
     if ( !scalar @features_branches ) {
-        my $error = qq{
+        my $error = << '_END';
 No feature branches exists.
 
 You can start a new feature branch:
 
     git-flux feature start <name> [<base>]
 
-};
-        return Git::Flux::Response->new(
-            status => 0,
-            error  => $error,
-        );
+_END
+        die $error;
     }
 
     my $current_branch = $self->git_current_branch();
@@ -117,10 +104,7 @@ You can start a new feature branch:
         $message .= "$branch\n";
     }
 
-    return Git::Flux::Response->new(
-        status  => 1,
-        message => $message,
-    );
+    return $message;
 }
 
 sub feature_track {
