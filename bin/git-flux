@@ -2,12 +2,13 @@
 
 use strict;
 use warnings;
+use 5.010;
 use Git::Flux;
 
 my $gitflux = Git::Flux->new(
     dir => $ENV{'GITFLUX_DIR'} || '.'
 );
 
-$gitflux->run(@ARGV);
+my $res = $gitflux->run(@ARGV);
 
-
+$res->is_success ? say $res->message : die $res->error."\n";
