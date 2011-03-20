@@ -2,7 +2,9 @@ package Git::Flux;
 
 use Carp;
 use Mouse;
+use Try::Tiny;
 use Git::Repository;
+use Git::Flux::Response;
 
 # commands 
 with qw/
@@ -80,11 +82,24 @@ sub run {
     # run help if no other cmd
     $cmd ||= $self->help();
 
-    if (!$self->meta->has_method($cmd)) {
-        die("`$cmd' is not supported by $0\n");
+    if ( !$self->meta->has_method($cmd) ) {
+        return Git::Flux::Response->new(
+            status => 0,
+            error  => "`$cmd' is not supported"
+        );
     }
 
-    $self->$cmd(@opts);
+    my $res;
+    try {
+        $res = Git::Flux::Response->new( message => $self->$cmd(@opts) );
+    }
+    catch {
+        $res = Git::Flux::Response->new(
+            status => 0,
+            error  => $_,
+        );
+    };
+    return $res;
 }
 
 1;
@@ -122,6 +137,8 @@ work.
 You can construct your own and provide it on initialize.
 
 =head2 run
+
+Returns a L<Git::Flux::Response> object    
 
 =head2 create_repo
 
