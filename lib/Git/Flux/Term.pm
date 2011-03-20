@@ -1,14 +1,14 @@
 package Git::Flux::Term;
 
 use Mouse::Role;
-use Term::Readline;
+use Term::ReadLine;
 
 has term => (
     is      => 'rw',
-    isa     => 'Term::Readline',
+    isa     => 'Object',
     lazy    => 1,
     default => sub {
-        my $term = Term::Readline->new('Gitflux');
+        my $term = Term::ReadLine->new('Gitflux');
         $term->ornaments(0);
         $term;
     },
@@ -28,3 +28,15 @@ sub answer {
 }
 
 1;
+
+=head1 NAME
+
+Git::Flux::Term
+
+=head1 DESCRIPTION
+
+=head1 METHODS
+
+=head2 is_interactive
+
+Returns boolean on whether we're in interactive mode.
