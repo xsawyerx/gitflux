@@ -210,10 +210,6 @@ sub init {
 
             my $answer = $self->answer($prompt, $default_suggestion);
 
-            defined $answer and chomp $answer;
-            ( defined $answer and $answer ne '' )
-                or $answer = $default_suggestion;
-
             # - means empty prefix, otherwise take the answer (or default)
             ( defined $answer and $answer eq '-' )
                 or $prefix = $answer;
