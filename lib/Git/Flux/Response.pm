@@ -17,4 +17,6 @@ has status => (
     isa => 'Int',
 );
 
+sub is_success { return (shift)->status }
+
 1;
