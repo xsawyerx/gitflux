@@ -349,10 +349,6 @@ sub parse_args {
     return \%args;
 }
 
-sub is_interactive {
-    return -t STDIN && -t STDOUT;
-}
-
 sub hotfix_prefix {
     (shift)->repo->run( 'config' => '--get' => 'gitflux.prefix.hotfix' );
 }
@@ -535,9 +531,7 @@ Asserts that $base is a valid commit on $master
 
 Asserts that no branch exists for a given prefix
 
-=head2 is_interactive
 
-Returns boolean on whether we're in interactive mode.
 
 =head2 expand_prefix
 
