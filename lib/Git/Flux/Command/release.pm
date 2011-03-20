@@ -21,7 +21,7 @@ sub release_list {
 
     my @releases_branches = grep { /^$prefix/ } $self->git_local_branches();
 
-    if ( !scalar @features_branches ) {
+    if ( !scalar @releases_branches) {
         my $error = qq{
 No release branches exist.
 
