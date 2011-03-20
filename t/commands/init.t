@@ -17,7 +17,7 @@ use Git::Repository;
 plan skip_all => 'Default git binary not found in PATH'
     if !Git::Repository::Command::_is_git('git');
 
-plan tests => 10;
+plan tests => 12;
 
 {
     # remove interactive mode
@@ -62,7 +62,6 @@ plan tests => 10;
 
     my $dir  = tempdir( CLEANUP => 1 );
     my $flux = Git::Flux->new( dir => $dir );
-
     $flux->run('init');
 
     is(
