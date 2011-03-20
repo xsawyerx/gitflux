@@ -4,15 +4,14 @@ use Carp;
 use Mouse;
 use Git::Repository;
 
-# common
-with 'Git::Flux::Utils';
-
 # commands 
 with qw/
+    Git::Flux::Utils
     Git::Flux::Command::init
     Git::Flux::Command::help
     Git::Flux::Command::feature
     Git::Flux::Command::hotfix
+    Git::Flux::Command::release
 /;
 
 our $VERSION = '0.0_03';

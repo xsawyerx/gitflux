@@ -22,7 +22,6 @@ sub hotfix_list {
     my $verbose = shift || 0;
 
     my $prefix = $self->hotfix_prefix();
-
     my @hotfix_branches = grep { /^$prefix/ } $self->git_local_branches();
 
     if ( scalar @hotfix_branches == 0 ) {
