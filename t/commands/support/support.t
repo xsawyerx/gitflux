@@ -7,9 +7,12 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
+use Test::git;
 use Test::More skip_all => 'support not implemented yet'; # 5;
 use Test::Fatal;
 use TestFunctions;
+
+has_git;
 
 {
     # list if no support branches exist

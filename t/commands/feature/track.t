@@ -5,7 +5,10 @@ use lib 't/lib';
 use Git::Flux;
 use TestFunctions;
 
+use Test::Git;
 use Test::More;
+
+has_git;
 
 plan tests => 6;
 
