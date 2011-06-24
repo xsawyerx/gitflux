@@ -7,9 +7,12 @@ use lib 't/lib/';
 use Git::Flux;
 
 use File::Temp 'tempdir';
+use Test::Git;
 use Test::More;
 use TestFunctions;
 use Test::TinyMocker;
+
+has_git;
 
 plan tests => 11;
 

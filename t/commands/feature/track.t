@@ -5,7 +5,10 @@ use lib 't/lib';
 use Git::Flux;
 use TestFunctions;
 
+use Test::Git;
 use Test::More;
+
+has_git;
 
 plan tests => 6;
 
@@ -32,7 +35,8 @@ plan tests => 6;
 
     my $dir = tempdir( CLEANUP => 1 );
     chdir $dir or die "Can't chdir back to $dir: $!";
-    my $orig_repo = Git::Repository->create('init');
+    Git::Repository->run('init');
+    my $orig_repo = Git::Repository->new;
     write_file( 'README', '' );
     $orig_repo->run( add => 'README' );
     $orig_repo->run( commit => '-m', 'initializing gitflux' );
